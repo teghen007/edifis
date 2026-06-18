@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/mark.schema.json",
+  "title": "Mark",
+  "description": "An academic mark with per-record teacher ownership. White paper §5, ADR-008. Cloud-wins arbitrates ONLY a true same-mark cross-node conflict; it never silently overwrites normal offline entry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "revision", "student_id", "subject_id", "class_id", "sequence", "owner_teacher_id", "score", "max_score", "recorded_at"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid", "description": "Stable identity of THIS mark (student×subject×sequence). Edits keep the id and bump revision." },
+    "revision": { "type": "string", "description": "Monotonic revision per edit; used with revision_parent to detect true conflicts vs. linear history." },
+    "revision_parent": { "type": ["string", "null"], "description": "The revision this edit was based on. If two nodes share a parent and diverge, that is a true conflict for cloud arbitration." },
+    "student_id": { "type": "string", "format": "uuid" },
+    "subject_id": { "type": "string", "format": "uuid" },
+    "class_id": { "type": "string", "format": "uuid" },
+    "sequence": { "type": "string", "description": "Assessment period, e.g. 'T1-Seq1' (Cameroon sequence/term structure)." },
+    "owner_teacher_id": { "type": "string", "format": "uuid", "description": "Teacher of record who owns this mark; their offline entry is authoritative absent a true conflict." },
+    "score": { "type": "number", "minimum": 0, "description": "Raw score before coefficient weighting." },
+    "max_score": { "type": "number", "exclusiveMinimum": 0, "description": "Typically 20 (out of 20)." },
+    "coefficient": { "type": ["number", "null"], "minimum": 0, "description": "Subject weighting for this pathway; applied by the promotion engine." },
+    "recorded_at": { "type": "string", "format": "date-time" },
+    "synced_time": { "type": ["string", "null"], "format": "date-time" },
+    "published": { "type": "boolean", "default": false, "description": "Students/parents see a mark only when published." }
+  }
+}

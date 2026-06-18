@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/issue-event.schema.json",
+  "title": "IssueEvent",
+  "description": "Immutable, append-only record of a single item issued to a student. One issue_event per item, even when many items share one batch signature. White paper §9.1, §15.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "revision", "student_id", "catalogue_item_id", "cost", "issued_at", "staff_id", "batch_id", "status"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid", "description": "UUIDv7. Identity is minted at creation (offline or online) and never changes." },
+    "revision": { "type": "string", "description": "Idempotency key. A replayed {id, revision} is a no-op server-side." },
+    "student_id": { "type": "string", "format": "uuid", "description": "Internal student UUID (the Master PEA ID lives on the student record)." },
+    "catalogue_item_id": { "type": "string", "format": "uuid", "description": "References the imported rubric catalogue entry that drives the cost." },
+    "cost": { "type": "integer", "minimum": 0, "description": "Cost in CFA minor units (integer, no decimals)." },
+    "issued_at": { "type": "string", "format": "date-time", "description": "Device local time of issuance (RFC 3339 UTC)." },
+    "synced_time": { "type": ["string", "null"], "format": "date-time", "description": "Cloud-restamped authoritative time at sync; null until synced." },
+    "staff_id": { "type": "string", "format": "uuid", "description": "Bursar/admin who issued the item; attributable for audit." },
+    "signature_ref": { "type": ["string", "null"], "description": "Reference to the captured signature image. May be shared by all issue_events in the same batch_id." },
+    "batch_id": { "type": "string", "format": "uuid", "description": "Groups all items issued under a single student signature." },
+    "device_id": { "type": ["string", "null"], "description": "Originating device, for audit." },
+    "status": { "type": "string", "enum": ["issued", "returned", "void"], "description": "Lifecycle by NEW events only; never edit. A return is a new 'return' event; a void carries a reason." },
+    "reason": { "type": ["string", "null"], "description": "Required when status is 'returned' or 'void'." }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "enum": ["returned", "void"] } } },
+      "then": { "required": ["reason"] }
+    }
+  ]
+}

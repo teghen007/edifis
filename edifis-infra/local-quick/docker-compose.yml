@@ -1,0 +1,49 @@
+# EDIFIS — quick containerized local run (app + Postgres). See it in Docker Desktop.
+#   docker compose -f docker-compose.yml up -d --build
+#   docker compose exec app php artisan migrate:fresh --seed --seeder=LabSeeder
+# App:  http://localhost:8080/staff     DB: postgres on localhost:5439
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: edifis-db
+    environment:
+      POSTGRES_USER: edifis
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: edifis
+    ports: ["5439:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edifis -d edifis"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    volumes: ["edifis_db:/var/lib/postgresql/data"]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: edifis-app:local
+    container_name: edifis-app
+    working_dir: /var/www
+    volumes:
+      - ../../edifis-backend:/var/www
+    env_file: ../../edifis-backend/.env
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "false"
+      EDIFIS_MODE: local
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_DATABASE: edifis
+      DB_USERNAME: edifis
+      DB_PASSWORD: secret
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
+    ports: ["8080:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  edifis_db:

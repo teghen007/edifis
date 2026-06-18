@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/ledger-entry.schema.json",
+  "title": "LedgerEntry",
+  "description": "Derived, append-only ledger line posted from a source event (e.g. an issue_event). White paper §9.1 Step 4, §15. BALANCE = SUM(amount) — it is NEVER stored as a writable column.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "student_id", "source_event_id", "amount", "posted_at"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "student_id": { "type": "string", "format": "uuid" },
+    "source_event_id": { "type": "string", "format": "uuid", "description": "The event that produced this line (issue_event id, payment id later, etc.). Enforces traceability." },
+    "amount": { "type": "integer", "description": "Signed CFA minor units. Debit positive (charge), credit negative (return/payment). Sum across a student = current balance." },
+    "posted_at": { "type": "string", "format": "date-time" },
+    "synced_time": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

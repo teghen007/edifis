@@ -1,0 +1,44 @@
+# EDIFIS Cloud Brain — dev stack. Prod: split DB to a dedicated-vCPU instance (white-paper §13.1).
+# Same image as the local node; only env differs (ADR-004).
+services:
+  app:
+    build:
+      context: ../../edifis-backend
+      dockerfile: Dockerfile            # builder generates this in T-0.2
+    image: edifis-backend:dev
+    environment:
+      EDIFIS_MODE: cloud
+      DB_HOST: postgres
+      REDIS_HOST: redis
+    env_file: ../../edifis-backend/.env.example
+    command: php artisan octane:start --host=0.0.0.0 --port=8000
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  horizon:
+    image: edifis-backend:dev
+    environment: { EDIFIS_MODE: cloud, DB_HOST: postgres, REDIS_HOST: redis }
+    env_file: ../../edifis-backend/.env.example
+    command: php artisan horizon
+    depends_on: [app]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: edifis
+      POSTGRES_USER: edifis
+      POSTGRES_PASSWORD: secret
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edifis -d edifis"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes: ["edifis_pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  edifis_pgdata:

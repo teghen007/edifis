@@ -1,0 +1,9 @@
+{
+  "code": "validation_failed",
+  "message": "The given data was invalid.",
+  "details": [
+    { "field": "student_id", "issue": "The student_id field is required." },
+    { "field": "cost", "issue": "Amount must be in CFA minor units (integer)." }
+  ],
+  "retry_after_seconds": null
+}

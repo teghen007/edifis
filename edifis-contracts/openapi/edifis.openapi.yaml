@@ -1,0 +1,365 @@
+openapi: 3.1.0
+info:
+  title: EDIFIS API
+  version: 0.1.0
+  description: >
+    HTTP API for EDIFIS — the same contract is served by the Cloud Brain and the
+    Lite Local Node. Cloud-only endpoints return error code `node_mode_unsupported`
+    when called on a node. All errors use the shared error model
+    (../schemas/_error.schema.json). All write endpoints are idempotent on {id, revision}.
+    THIS FILE IS THE SOURCE OF TRUTH — backend and mobile implement against it.
+
+servers:
+  - url: https://{school}.edifis.cm/api
+    description: Cloud Brain
+    variables: { school: { default: pssnkwen } }
+  - url: https://{school}.local/api
+    description: Lite Local Node (on-campus)
+    variables: { school: { default: pssnkwen } }
+
+tags:
+  - { name: health }
+  - { name: auth }
+  - { name: sync }
+  - { name: issuance }
+  - { name: attendance }
+  - { name: academics }
+  - { name: fees }
+  - { name: students }
+  - { name: timetable }
+  - { name: vacuum, description: "Principal-only command mode + AI co-pilot. Unlimited academic reach, never invisible — every action is audited. Finance is never directly editable here." }
+  - { name: monitoring }
+
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Liveness + which mode this instance runs in
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, mode, version]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  mode: { type: string, enum: [cloud, local] }
+                  version: { type: string }
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Exchange credentials for a short-TTL Sanctum token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: "username/email/PEA id" }
+                password: { type: string }
+                device_id: { type: string }
+      responses:
+        '200':
+          description: Token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, expires_at, role, user_id]
+                properties:
+                  token: { type: string }
+                  expires_at: { type: string, format: date-time, description: "Short TTL; client caches for brief offline use and re-validates on reconnect." }
+                  role:
+                    type: string
+                    description: "Staff hierarchy + parent. NO student role — minors do not have accounts."
+                    enum: [principal, vice_principal, bursar, class_master, subject_teacher, discipline_master, secretary, parent]
+                  user_id: { type: string, format: uuid }
+        '401': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /auth/revocations:
+    get:
+      tags: [auth]
+      summary: Revocation list pulled at sync (offboarding, ADR-006)
+      description: >
+        Returns tokens/users revoked since `since`. A node/app applies this on sync so a
+        disabled account loses access at next sync or token expiry. Revocation is immediate
+        on cloud, eventual on offline nodes — by design.
+      parameters:
+        - { name: since, in: query, schema: { type: string, format: date-time } }
+      responses:
+        '200':
+          description: Revoked identifiers
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [revoked_token_ids, as_of]
+                properties:
+                  revoked_token_ids: { type: array, items: { type: string } }
+                  revoked_user_ids: { type: array, items: { type: string, format: uuid } }
+                  as_of: { type: string, format: date-time }
+
+  /sync:
+    post:
+      tags: [sync]
+      summary: Bidirectional delta sync (push or pull)
+      description: >
+        Idempotent. A replayed envelope is a no-op. Accountability-lane items are
+        processed first. Server returns next_cursor and any resolved conflicts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../schemas/sync-envelope.schema.json' }
+      responses:
+        '200':
+          description: Applied; deltas + conflicts returned
+          content:
+            application/json:
+              schema: { $ref: '../schemas/sync-envelope.schema.json' }
+        '409': { $ref: '#/components/responses/Error' }
+        '429': { $ref: '#/components/responses/Error' }
+
+  /issuance/catalogue:import:
+    post:
+      tags: [issuance]
+      summary: Import the rubric catalogue (Excel) and default sets per form
+      responses:
+        '202': { description: Accepted for validating import (see fees/migration pipeline) }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /issuance/issue:
+    post:
+      tags: [issuance]
+      summary: Issue a batch of items to a student under one signature
+      description: Writes one immutable issue_event per item; auto-posts ledger debits.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [batch_id, student_id, items, signature_ref]
+              properties:
+                batch_id: { type: string, format: uuid }
+                student_id: { type: string, format: uuid }
+                signature_ref: { type: string }
+                items:
+                  type: array
+                  items: { $ref: '../schemas/issue-event.schema.json' }
+      responses:
+        '201':
+          description: Issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events: { type: array, items: { $ref: '../schemas/issue-event.schema.json' } }
+                  posted: { type: array, items: { $ref: '../schemas/ledger-entry.schema.json' } }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /attendance/sessions:
+    post:
+      tags: [attendance]
+      summary: Open a class session (class + subject/period + datetime)
+      responses:
+        '201': { description: Session opened }
+
+  /attendance/sessions/{sessionId}/scan:
+    post:
+      tags: [attendance]
+      summary: Record a scan or a default-on manual override
+      parameters: [ { name: sessionId, in: path, required: true, schema: { type: string, format: uuid } } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../schemas/attendance-event.schema.json' }
+      responses:
+        '201':
+          description: Recorded
+          content:
+            application/json:
+              schema: { $ref: '../schemas/attendance-event.schema.json' }
+
+  /academics/marks:
+    post:
+      tags: [academics]
+      summary: Enter or edit a mark (per-record teacher ownership)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '../schemas/mark.schema.json' }
+      responses:
+        '201': { description: Recorded, content: { application/json: { schema: { $ref: '../schemas/mark.schema.json' } } } }
+        '409':
+          description: True same-mark conflict — cloud arbitration; rejected edit surfaced
+          content: { application/json: { schema: { $ref: '../schemas/_error.schema.json' } } }
+
+  /fees/students/{studentId}/balance:
+    get:
+      tags: [fees]
+      summary: Derived balance for a student (SUM of ledger entries; never stored)
+      parameters: [ { name: studentId, in: path, required: true, schema: { type: string, format: uuid } } ]
+      responses:
+        '200':
+          description: Balance
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [student_id, balance, currency]
+                properties:
+                  student_id: { type: string, format: uuid }
+                  balance: { type: integer, description: "CFA minor units; SUM(ledger_entry.amount)" }
+                  currency: { type: string, const: XAF }
+
+  /students:
+    post:
+      tags: [students]
+      summary: Enrol a student (issues Master PEA ID, captures consent + photo)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [student, consent]
+              properties:
+                student: { $ref: '../schemas/student.schema.json' }
+                consent: { $ref: '../schemas/consent.schema.json' }
+      responses:
+        '201': { description: Enrolled }
+        '422':
+          description: Consent missing/invalid for a minor
+          content: { application/json: { schema: { $ref: '../schemas/_error.schema.json' } } }
+
+  /timetable:
+    get:
+      tags: [timetable]
+      summary: Read the master timetable (role-scoped) and the calendar of activities
+      parameters:
+        - { name: class_id, in: query, schema: { type: string, format: uuid } }
+        - { name: teacher_id, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Timetable + calendar entries }
+    post:
+      tags: [timetable]
+      summary: Create/update timetable or calendar entries (VP/timetable officer; Principal approves)
+      responses:
+        '201': { description: Saved (pending Principal approval where required) }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /vacuum/query:
+    post:
+      tags: [vacuum]
+      summary: Natural-language query over the school's academic data (Principal AI co-pilot, read-only)
+      description: >
+        Returns an answer + the structured records it was derived from. READ ONLY — never mutates.
+        Principal role required; on a node it reads local data, on cloud the school's tenant.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question: { type: string, example: "Who is borderline for promotion in Form 4?" }
+      responses:
+        '200':
+          description: Answer + supporting records
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [answer, records]
+                properties:
+                  answer: { type: string }
+                  records: { type: array, items: { type: object } }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /vacuum/command:
+    post:
+      tags: [vacuum]
+      summary: Execute a Principal command on academic data (audited; finance excluded)
+      description: >
+        Carries out a super-user action (correct mark, promote/repeat student, deactivate account, override).
+        ALWAYS writes an immutable audit_entry (actor, when, before/after, reason). Bulk/destructive
+        commands require confirm=true. Finance ledgers are NOT editable here — returns forbidden.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command, target, reason]
+              properties:
+                command:
+                  type: string
+                  enum: [correct_mark, promote_student, repeat_student, override_promotion, deactivate_account]
+                target: { type: object, description: "Ids the command acts on (student_id, mark_id, account_id, ...)." }
+                payload: { type: object, description: "New values where applicable (e.g. corrected score)." }
+                reason: { type: string, description: "Mandatory justification; stored in the audit trail." }
+                confirm: { type: boolean, default: false, description: "Required true for bulk/destructive commands." }
+      responses:
+        '200':
+          description: Applied; audit entries returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applied: { type: array, items: { type: object } }
+                  audit: { type: array, items: { $ref: '../schemas/audit-entry.schema.json' } }
+        '403':
+          description: forbidden — e.g. a finance target, or non-Principal caller
+          content: { application/json: { schema: { $ref: '../schemas/_error.schema.json' } } }
+        '409': { $ref: '#/components/responses/Error' }
+
+  /monitoring/node-status:
+    post:
+      tags: [monitoring]
+      summary: Node + UPS telemetry to the central endpoint (§2.1, §11)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [node_id, reported_at]
+              properties:
+                node_id: { type: string }
+                reported_at: { type: string, format: date-time }
+                disk_ok: { type: boolean }
+                ups_on_battery: { type: boolean }
+                last_sync_at: { type: string, format: date-time }
+                pending_outbox: { type: integer }
+      responses:
+        '202': { description: Recorded }
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+  responses:
+    Error:
+      description: Standard error
+      content:
+        application/json:
+          schema: { $ref: '../schemas/_error.schema.json' }
+
+security:
+  - sanctum: []

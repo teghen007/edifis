@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/catalogue-item.schema.json",
+  "title": "CatalogueItem",
+  "description": "A single item in the rubric catalogue (textbook, uniform, etc.). Imported from Excel before distribution. White paper §9.1 Step 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "cost", "category"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "name": { "type": "string" },
+    "description": { "type": ["string", "null"] },
+    "cost": { "type": "integer", "minimum": 0, "description": "CFA minor units (integer)." },
+    "category": { "type": "string", "enum": ["textbook", "uniform", "lab_fee", "boarding", "other"] },
+    "default_for_forms": { "type": "array", "items": { "type": "string", "format": "uuid" }, "description": "Form/class UUIDs this item belongs to by default." },
+    "isbn": { "type": ["string", "null"] },
+    "active": { "type": "boolean", "default": true }
+  }
+}

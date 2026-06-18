@@ -1,0 +1,10 @@
+/vendor
+/node_modules
+.env
+.env.backup
+*.log
+/storage/*.key
+/public/storage
+/public/hot
+.phpunit.result.cache
+.php-cs-fixer.cache

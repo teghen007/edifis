@@ -1,0 +1,39 @@
+{
+  "direction": "pull",
+  "node_id": "node-pssnkwen-01",
+  "since_cursor": "cur_018f3c2affff7000a1b2c3d4e5f60000",
+  "next_cursor": "cur_018f3c2b00007000a1b2c3d4e5f60000",
+  "priority": "normal",
+  "items": [
+    {
+      "type": "mark",
+      "id": "018f3c2a-b001-7000-a1b2-c3d4e5f60001",
+      "revision": "018f3c2a-b001-7000-a1b2-c3d4e5f60001-r2",
+      "payload": {
+        "id": "018f3c2a-b001-7000-a1b2-c3d4e5f60001",
+        "revision": "018f3c2a-b001-7000-a1b2-c3d4e5f60001-r2",
+        "revision_parent": "018f3c2a-b001-7000-a1b2-c3d4e5f60001-r1",
+        "student_id": "018f3c2a-7000-7000-a1b2-c3d4e5f60001",
+        "subject_id": "018f3c2a-4000-7000-a1b2-c3d4e5f60001",
+        "class_id": "018f3c2a-3000-7000-a1b2-c3d4e5f60001",
+        "sequence": "T1-Seq1",
+        "owner_teacher_id": "018f3c2a-6000-7000-a1b2-c3d4e5f60003",
+        "score": 16.0,
+        "max_score": 20,
+        "coefficient": 1.0,
+        "recorded_at": "2026-06-16T10:30:00Z",
+        "synced_time": "2026-06-16T11:00:00Z",
+        "published": true
+      }
+    }
+  ],
+  "conflicts": [
+    {
+      "type": "mark",
+      "id": "018f3c2a-b001-7000-a1b2-c3d4e5f60002",
+      "resolution": "cloud_wins",
+      "winning_revision": "018f3c2a-b001-7000-a1b2-c3d4e5f60002-r3",
+      "rejected_revision": "018f3c2a-b001-7000-a1b2-c3d4e5f60002-r2"
+    }
+  ]
+}

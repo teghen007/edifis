@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/attendance-event.schema.json",
+  "title": "AttendanceEvent",
+  "description": "Immutable, append-only attendance scan or override tied to a class session. White paper §9.2, §15. Integrity is policy-based (count reconciliation), not software-enforced.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "revision", "session_id", "student_id", "scanned_at", "status"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid", "description": "UUIDv7, minted at scan time (works offline)." },
+    "revision": { "type": "string", "description": "Idempotency key; replayed events are no-ops." },
+    "session_id": { "type": "string", "format": "uuid", "description": "The class session (class + subject/period + date/time) this scan belongs to." },
+    "student_id": { "type": "string", "format": "uuid" },
+    "scanned_at": { "type": "string", "format": "date-time", "description": "Device local time of the scan/override." },
+    "synced_time": { "type": ["string", "null"], "format": "date-time" },
+    "device_id": { "type": ["string", "null"] },
+    "scanned_by": { "type": ["string", "null"], "format": "uuid", "description": "Teacher who ran the session." },
+    "source": { "type": "string", "enum": ["qr_scan", "manual_override"], "default": "qr_scan", "description": "manual_override is the default-on path for a present-but-cardless student and MUST carry a void_reason explaining it." },
+    "status": { "type": "string", "enum": ["present", "void"], "description": "present = recorded; void = voided-with-reason. Never edited, only added or voided." },
+    "void_reason": { "type": ["string", "null"], "description": "Required when status is 'void' or when source is 'manual_override' (audit trail for overrides)." }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "void" } } },
+      "then": { "required": ["void_reason"] }
+    },
+    {
+      "if": { "properties": { "source": { "const": "manual_override" } } },
+      "then": { "required": ["void_reason"] }
+    }
+  ]
+}

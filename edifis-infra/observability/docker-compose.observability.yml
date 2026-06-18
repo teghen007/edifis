@@ -1,0 +1,46 @@
+# EDIFIS — observability stack. Run alongside the cloud stack (same network).
+#   docker compose -f ../cloud/docker-compose.yml -f docker-compose.observability.yml up -d
+# Grafana: http://<host>:3000 (admin / set GF_SECURITY_ADMIN_PASSWORD). Prometheus: :9090
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    ports: ["9090:9090"]
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-changeme}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports: ["3000:3000"]
+    depends_on: [prometheus]
+    restart: always
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_USERNAME:-edifis}:${DB_PASSWORD:-secret}@postgres:5432/${DB_DATABASE:-edifis}?sslmode=disable"
+    depends_on: [prometheus]
+    restart: always
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
+    depends_on: [prometheus]
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    restart: always
+
+volumes:
+  prom_data:
+  grafana_data:

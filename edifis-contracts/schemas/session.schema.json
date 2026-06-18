@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/session.schema.json",
+  "title": "AttendanceSession",
+  "description": "A class session — the unit of record for attendance. White paper §9.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "class_id", "subject_id", "teacher_id", "session_date", "period", "status"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "class_id": { "type": "string", "format": "uuid" },
+    "subject_id": { "type": "string", "format": "uuid" },
+    "teacher_id": { "type": "string", "format": "uuid" },
+    "session_date": { "type": "string", "format": "date-time" },
+    "period": { "type": "string", "description": "e.g. 'AM', 'PM', '08:00-09:00'." },
+    "scanned_count": { "type": ["integer", "null"], "minimum": 0 },
+    "headcount": { "type": ["integer", "null"], "minimum": 0 },
+    "status": { "type": "string", "enum": ["open", "closed"], "default": "open" },
+    "opened_at": { "type": "string", "format": "date-time" },
+    "closed_at": { "type": ["string", "null"], "format": "date-time" },
+    "synced_time": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

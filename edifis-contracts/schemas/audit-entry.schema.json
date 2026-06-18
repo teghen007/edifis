@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/audit-entry.schema.json",
+  "title": "AuditEntry",
+  "description": "Append-only, read-only audit record. Every change to a mark or financial/ledger entry is attributable to an actor, device, and moment. White paper §8.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "actor_id", "action", "entity_type", "entity_id", "occurred_at"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "actor_id": { "type": "string", "format": "uuid", "description": "User who performed the action; retained even after offboarding." },
+    "actor_role": { "type": ["string", "null"] },
+    "action": { "type": "string", "description": "e.g. 'mark.edit', 'issue.create', 'attendance.override', 'promotion.override'." },
+    "entity_type": { "type": "string" },
+    "entity_id": { "type": "string", "format": "uuid" },
+    "before": { "description": "Prior value(s); null for creations.", "type": ["object", "null"] },
+    "after": { "description": "New value(s); null for deletions (which should not occur on append-only data).", "type": ["object", "null"] },
+    "device_id": { "type": ["string", "null"] },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "synced_time": { "type": ["string", "null"], "format": "date-time" }
+  }
+}

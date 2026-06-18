@@ -1,0 +1,16 @@
+# EDIFIS campus Wi-Fi AP (white-paper §3). Copy to /etc/hostapd/hostapd.conf.
+# Confirm the adapter supports AP/master mode first (e.g. ath9k_htc, mt7601u).
+interface=wlan0
+driver=nl80211
+ssid=EDIFIS-PSSNKWEN
+hw_mode=g
+channel=6
+country_code=CM
+ieee80211n=1
+wmm_enabled=1
+auth_algs=1
+wpa=2                       # WPA2; use wpa=2 with sae for WPA3 where supported
+wpa_key_mgmt=WPA-PSK
+rsn_pairwise=CCMP
+wpa_passphrase=CHANGE_ME_STRONG_PASSPHRASE
+# Isolate the subnet; serve the app over HTTPS with an internal CA cert.

@@ -1,0 +1,30 @@
+{
+  "direction": "push",
+  "node_id": "node-pssnkwen-01",
+  "since_cursor": "cur_018f3c2affff7000a1b2c3d4e5f60000",
+  "next_cursor": null,
+  "priority": "accountability",
+  "items": [
+    {
+      "type": "issue_event",
+      "id": "018f3c2a-9001-7000-a1b2-c3d4e5f60001",
+      "revision": "018f3c2a-9001-7000-a1b2-c3d4e5f60001-r1",
+      "payload": {
+        "id": "018f3c2a-9001-7000-a1b2-c3d4e5f60001",
+        "revision": "018f3c2a-9001-7000-a1b2-c3d4e5f60001-r1",
+        "student_id": "018f3c2a-7000-7000-a1b2-c3d4e5f60001",
+        "catalogue_item_id": "018f3c2a-5000-7000-a1b2-c3d4e5f60001",
+        "cost": 8000,
+        "issued_at": "2026-06-16T09:00:00Z",
+        "synced_time": null,
+        "staff_id": "018f3c2a-6000-7000-a1b2-c3d4e5f60002",
+        "signature_ref": "sig-018f3c2a-batch-001",
+        "batch_id": "018f3c2a-8000-7000-a1b2-c3d4e5f60001",
+        "device_id": "tablet-bursar-01",
+        "status": "issued",
+        "reason": null
+      }
+    }
+  ],
+  "conflicts": null
+}

@@ -1,0 +1,14 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "declare_strict_types": true,
+        "not_operator_with_successor_space": false,
+        "ordered_imports": {
+            "sort_algorithm": "alpha",
+            "imports_order": ["class", "function", "const"]
+        },
+        "trailing_comma_in_multiline": {
+            "elements": ["arrays", "arguments", "parameters"]
+        }
+    }
+}

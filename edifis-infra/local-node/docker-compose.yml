@@ -1,0 +1,48 @@
+# EDIFIS Lite Local Node — runs on a repurposed Linux desktop (white-paper §3, §13.2).
+# Same image as cloud; EDIFIS_MODE=local strips multi-tenancy + parent portal.
+services:
+  app:
+    image: edifis-backend:dev
+    environment:
+      EDIFIS_MODE: local
+      EDIFIS_SCHOOL_CODE: pssnkwen
+      EDIFIS_NODE_ID: node-pssnkwen-01
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      SYNC_CLOUD_BASE_URL: https://pssnkwen.edifis.cm/api
+    env_file: ../../edifis-backend/.env.example
+    command: php artisan octane:start --host=0.0.0.0 --port=8000
+    ports: ["8000:8000"]
+    restart: always                     # revive unattended after power loss (§11)
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  horizon:
+    image: edifis-backend:dev
+    environment: { EDIFIS_MODE: local, DB_HOST: postgres, REDIS_HOST: redis }
+    env_file: ../../edifis-backend/.env.example
+    command: php artisan horizon
+    restart: always
+    depends_on: [app]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: edifis
+      POSTGRES_USER: edifis
+      POSTGRES_PASSWORD: secret
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edifis -d edifis"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: always
+    volumes: ["edifis_node_pgdata:/var/lib/postgresql/data"]   # put on the mirrored SSD pair (§11/§13.2)
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+
+volumes:
+  edifis_node_pgdata:

@@ -1,0 +1,7 @@
+# EDIFIS campus DHCP + local name (white-paper §3). Copy to /etc/dnsmasq.conf.
+interface=wlan0
+dhcp-range=10.42.0.10,10.42.0.250,12h
+# Friendly campus hostname -> the desktop's LAN IP (served over HTTPS, internal CA cert)
+address=/pssnkwen.local/10.42.0.1
+domain=local
+# Keep DNS on the local subnet; upstream only when internet is reachable.

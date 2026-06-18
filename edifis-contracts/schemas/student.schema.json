@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/student.schema.json",
+  "title": "Student",
+  "description": "Student identity record, keyed by lifetime Master PEA ID. Demographic fields use last-write-wins (low-stakes only); marks/money are NOT here. White paper §8, §11.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "master_pea_id", "given_name", "family_name", "current_class_id", "enrolled_at"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "master_pea_id": { "type": "string", "pattern": "^PEA-[0-9]{4}-[0-9]{5}$", "description": "Lifetime cross-school identity, e.g. PEA-2026-00124. Issued by the cloud." },
+    "given_name": { "type": "string" },
+    "family_name": { "type": "string" },
+    "other_names": { "type": ["string", "null"] },
+    "sex": { "type": ["string", "null"], "enum": ["M", "F", null] },
+    "date_of_birth": { "type": ["string", "null"], "format": "date" },
+    "current_class_id": { "type": "string", "format": "uuid" },
+    "photo_ref": { "type": ["string", "null"], "description": "Reference to the enrolment photo (ID card, visual register, documents). Personal data of a minor — consent-gated." },
+    "enrolled_at": { "type": "string", "format": "date-time" },
+    "demographics_revision": { "type": ["string", "null"], "description": "LWW marker for demographic edits; cloud restamps authoritative time at sync." },
+    "active": { "type": "boolean", "default": true }
+  }
+}

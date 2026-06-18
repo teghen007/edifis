@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/consent.schema.json",
+  "title": "Consent",
+  "description": "Versioned parental/guardian consent for processing a minor's data. White paper §8.1, §14.1 (Cameroon Law No. 2024/017). A new consent is appended; the old one is never overwritten.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "student_id", "consenter_name", "relationship", "consented_at", "scope", "version"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "student_id": { "type": "string", "format": "uuid" },
+    "consenter_name": { "type": "string" },
+    "relationship": { "type": "string", "enum": ["mother", "father", "guardian", "other"] },
+    "consenter_contact": { "type": ["string", "null"], "description": "Phone/email of the consenting guardian (used for guardian account bootstrapping)." },
+    "consented_at": { "type": "string", "format": "date-time" },
+    "scope": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Processing purposes agreed to, e.g. ['academic_records','photo_on_id','parent_portal']." },
+    "version": { "type": "integer", "minimum": 1, "description": "Increments when purposes change; prior versions retained." },
+    "revoked_at": { "type": ["string", "null"], "format": "date-time", "description": "Set by appending a revocation; the record itself is not deleted." }
+  }
+}

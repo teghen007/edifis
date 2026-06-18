@@ -1,0 +1,40 @@
+# ── Secrets ───────────────────────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+*.key
+*.pem
+
+# ── Backend (Laravel) ─────────────────────────────────────────────────────────
+edifis-backend/vendor/
+edifis-backend/node_modules/
+edifis-backend/storage/*.key
+edifis-backend/storage/framework/cache/*
+edifis-backend/storage/framework/sessions/*
+edifis-backend/storage/framework/views/*
+edifis-backend/storage/logs/*
+edifis-backend/bootstrap/cache/*
+edifis-backend/.phpunit.result.cache
+
+# ── Mobile (Flutter) ──────────────────────────────────────────────────────────
+edifis-mobile/.dart_tool/
+edifis-mobile/build/
+edifis-mobile/.flutter-plugins
+edifis-mobile/.flutter-plugins-dependencies
+edifis-mobile/*.g.dart.bak
+edifis-mobile/ios/Pods/
+edifis-mobile/android/.gradle/
+
+# ── Infra ─────────────────────────────────────────────────────────────────────
+edifis-infra/**/*.local.yml
+edifis-infra/**/secrets/
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Keep empty scaffold dirs
+!**/.gitkeep

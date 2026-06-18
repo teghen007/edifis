@@ -1,0 +1,14 @@
+{
+  "id": "018f3c2a-7000-7000-a1b2-c3d4e5f60001",
+  "master_pea_id": "PEA-2026-00124",
+  "given_name": "Goodness",
+  "family_name": "Shei",
+  "other_names": null,
+  "sex": "F",
+  "date_of_birth": "2008-04-15",
+  "current_class_id": "018f3c2a-3000-7000-a1b2-c3d4e5f60001",
+  "photo_ref": "photos/pea-2026-00124.jpg",
+  "enrolled_at": "2026-06-01T08:00:00Z",
+  "demographics_revision": null,
+  "active": true
+}

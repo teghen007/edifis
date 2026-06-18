@@ -1,0 +1,112 @@
+# ── EDIFIS LOCAL TEST LAB ──────────────────────────────────────────────────────
+# Models the REAL topology on one desktop: 1 Cloud Brain + 2 campus nodes.
+# Same image everywhere (ADR-004); behaviour differs only by env_file.
+#
+#   cloud-app   :8080  (multi-tenant Cloud Brain)
+#   nkwen-app   :8091  (PSS Nkwen local node)        -- default
+#   mankon-app  :8092  (PSS Mankon local node)       -- profile: twonodes
+#
+# 'cloudlink' = the simulated internet between nodes and the cloud.
+# Detach a node from it to simulate an outage (see LAB.md).
+#
+#   docker compose -f docker-compose.lab.yml up -d --build           # cloud + Nkwen
+#   docker compose -f docker-compose.lab.yml --profile twonodes up -d # + Mankon
+
+x-app: &app
+  build:
+    context: ../../edifis-backend
+    dockerfile: Dockerfile
+  image: edifis-backend:lab
+  entrypoint: ["/bin/sh", "/usr/local/bin/lab-entrypoint.sh"]
+  volumes:
+    - ../../edifis-backend:/var/www
+    - ./lab-entrypoint.sh:/usr/local/bin/lab-entrypoint.sh:ro
+  restart: unless-stopped
+
+x-db: &db
+  image: postgres:16-alpine
+  environment:
+    POSTGRES_USER: edifis
+    POSTGRES_PASSWORD: secret
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U edifis"]
+    interval: 5s
+    timeout: 3s
+    retries: 30
+
+services:
+  # One-shot: installs vendor/ into the shared bind mount before apps boot.
+  init:
+    <<: *app
+    entrypoint: ["/bin/sh", "-c", "composer install --no-interaction --prefer-dist"]
+    restart: "no"
+
+  # ── Cloud Brain ──────────────────────────────────────────────
+  cloud-db:
+    <<: *db
+    environment:
+      POSTGRES_USER: edifis
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: edifis_central
+    volumes: ["cloud-db-data:/var/lib/postgresql/data"]
+    networks: [cloud-net]
+
+  cloud-app:
+    <<: *app
+    env_file: ./.env.cloud
+    ports: ["8080:8000"]
+    depends_on:
+      init: { condition: service_completed_successfully }
+      cloud-db: { condition: service_healthy }
+    networks: [cloud-net, cloudlink]
+
+  # ── Campus node: PSS Nkwen (default) ─────────────────────────
+  nkwen-db:
+    <<: *db
+    environment:
+      POSTGRES_USER: edifis
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: edifis_nkwen
+    volumes: ["nkwen-db-data:/var/lib/postgresql/data"]
+    networks: [nkwen-net]
+
+  nkwen-app:
+    <<: *app
+    env_file: ./.env.node-nkwen
+    ports: ["8091:8000"]
+    depends_on:
+      init: { condition: service_completed_successfully }
+      nkwen-db: { condition: service_healthy }
+    networks: [nkwen-net, cloudlink]
+
+  # ── Campus node: PSS Mankon (optional: --profile twonodes) ───
+  mankon-db:
+    <<: *db
+    profiles: ["twonodes"]
+    environment:
+      POSTGRES_USER: edifis
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: edifis_mankon
+    volumes: ["mankon-db-data:/var/lib/postgresql/data"]
+    networks: [mankon-net]
+
+  mankon-app:
+    <<: *app
+    profiles: ["twonodes"]
+    env_file: ./.env.node-mankon
+    ports: ["8092:8000"]
+    depends_on:
+      init: { condition: service_completed_successfully }
+      mankon-db: { condition: service_healthy }
+    networks: [mankon-net, cloudlink]
+
+networks:
+  cloudlink: {}     # the "internet" — detach a node here to simulate an outage
+  cloud-net: {}     # cloud app <-> cloud db (the cloud's private LAN)
+  nkwen-net: {}     # Nkwen app <-> Nkwen db (campus LAN — stays up when offline)
+  mankon-net: {}
+
+volumes:
+  cloud-db-data:
+  nkwen-db-data:
+  mankon-db-data:

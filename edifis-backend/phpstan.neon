@@ -1,0 +1,20 @@
+parameters:
+    level: 6
+    paths:
+        - app
+        - tests
+    excludePaths:
+        - vendor
+        - storage
+    scanDirectories:
+        - vendor/laravel/framework/src/Illuminate
+
+    doctrine:
+        treatPhpDocTypesAsCertain: false
+
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+
+    ignoreErrors:
+        - '#Access to an undefined property#'
+        - '#Call to an undefined method#'

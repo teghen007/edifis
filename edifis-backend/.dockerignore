@@ -1,0 +1,10 @@
+.env
+.env.*
+vendor
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/framework/testing/*
+node_modules
+.git

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/sync-envelope.schema.json",
+  "title": "SyncEnvelope",
+  "description": "The bidirectional delta-sync envelope between a node/app and the cloud. White paper §5, §10; ADR-007. Carries only records changed since the last cursor. Idempotent apply: a replayed envelope is a no-op.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["direction", "node_id", "since_cursor", "items"],
+  "properties": {
+    "direction": { "type": "string", "enum": ["push", "pull"], "description": "push = client→cloud; pull = cloud→client." },
+    "node_id": { "type": "string", "description": "Originating node/device identifier." },
+    "since_cursor": { "type": ["string", "null"], "description": "Opaque cursor from the last successful sync; null for a full initial pull." },
+    "next_cursor": { "type": ["string", "null"], "description": "Returned by the server on pull; the client stores it for next time." },
+    "priority": { "type": "string", "enum": ["accountability", "normal"], "default": "normal", "description": "accountability lane (ledger/issuance/attendance/audit) is flushed first to minimise single-copy exposure (§11)." },
+    "items": {
+      "type": "array",
+      "description": "Batch of changed records, each tagged with its type and idempotency key.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "id", "revision", "payload"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["issue_event", "attendance_event", "ledger_entry", "mark", "student", "consent", "audit_entry", "session"],
+            "description": "Which schema `payload` conforms to."
+          },
+          "id": { "type": "string", "format": "uuid" },
+          "revision": { "type": "string", "description": "Idempotency key. Server applies once per {id, revision}; replays return idempotency_replay, not a double-post." },
+          "payload": { "type": "object", "description": "The record, conforming to the schema named by `type`." }
+        }
+      }
+    },
+    "conflicts": {
+      "type": ["array", "null"],
+      "description": "On pull, true conflicts the server resolved (e.g. marks cloud-wins). The client surfaces these to the owning teacher; never silently dropped.",
+      "items": {
+        "type": "object",
+        "required": ["type", "id", "resolution", "winning_revision"],
+        "properties": {
+          "type": { "type": "string" },
+          "id": { "type": "string", "format": "uuid" },
+          "resolution": { "type": "string", "enum": ["cloud_wins", "append_both", "lww"] },
+          "winning_revision": { "type": "string" },
+          "rejected_revision": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

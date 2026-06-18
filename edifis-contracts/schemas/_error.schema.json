@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edifis.cm/schemas/_error.schema.json",
+  "title": "Error",
+  "description": "The ONLY error shape any EDIFIS endpoint returns. Both apps branch on `code`, never on HTTP status alone.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "message"],
+  "properties": {
+    "code": {
+      "type": "string",
+      "enum": [
+        "validation_failed",
+        "unauthenticated",
+        "token_expired",
+        "token_revoked",
+        "forbidden",
+        "not_found",
+        "conflict",
+        "idempotency_replay",
+        "rate_limited",
+        "consent_required",
+        "node_mode_unsupported",
+        "server_error"
+      ],
+      "description": "token_revoked = the revocation list (pulled at sync) names this token. idempotency_replay = a {id,revision} already applied (treated as success-equivalent, returned for transparency). node_mode_unsupported = a cloud-only feature called on a local node."
+    },
+    "message": { "type": "string", "description": "Human-readable, English. Not for branching." },
+    "details": {
+      "type": ["array", "null"],
+      "description": "Field-level validation errors when code = validation_failed.",
+      "items": {
+        "type": "object",
+        "required": ["field", "issue"],
+        "properties": {
+          "field": { "type": "string" },
+          "issue": { "type": "string" }
+        }
+      }
+    },
+    "retry_after_seconds": { "type": ["integer", "null"], "description": "Set when code = rate_limited (HTTP 429)." }
+  }
+}
