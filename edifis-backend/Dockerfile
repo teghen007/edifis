@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     postgresql-dev \
     postgresql-client \
     supervisor \
+    brotli-dev \
     && docker-php-ext-install pdo_pgsql pgsql zip gd
 
 RUN pecl install redis swoole \
