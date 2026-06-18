@@ -25,7 +25,8 @@ RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --opti
 COPY . .
 
 # App is present now: finish autoload (runs package discovery) + storage link.
-RUN composer dump-autoload --optimize --no-dev \
+RUN mkdir -p bootstrap/cache storage/framework/{cache,sessions,views,testing} storage/logs \
+    && composer dump-autoload --optimize --no-dev \
     && (php artisan storage:link 2>/dev/null || true)
 
 EXPOSE 8000
