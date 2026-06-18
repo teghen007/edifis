@@ -10,7 +10,7 @@ RUN apk add --no-cache \
     postgresql-client \
     supervisor \
     brotli-dev \
-    && docker-php-ext-install pdo_pgsql pgsql zip gd
+    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl
 
 RUN pecl install redis swoole \
     && docker-php-ext-enable redis swoole
@@ -19,13 +19,18 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-COPY composer.json ./
+# Copy BOTH composer.json and composer.lock so `install` uses the locked versions.
+# (Without the lock, composer does a full `update` and fails on dependency resolution.)
+# --no-scripts: artisan package:discover can't run yet (app code not copied).
+COPY composer.json composer.lock ./
 
-RUN composer install --no-dev --no-interaction --optimize-autoloader
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --optimize-autoloader
 
 COPY . .
 
-RUN php artisan storage:link 2>/dev/null || true
+# App is present now: finish autoload (runs package discovery) + storage link.
+RUN composer dump-autoload --optimize --no-dev \
+    && (php artisan storage:link 2>/dev/null || true)
 
 EXPOSE 8000
 
