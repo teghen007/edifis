@@ -25,7 +25,17 @@ RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --opti
 COPY . .
 
 # App is present now: finish autoload (runs package discovery) + storage link.
-RUN mkdir -p bootstrap/cache storage/framework/{cache,sessions,views,testing} storage/logs \
+# NOTE: list dirs explicitly — Docker RUN uses /bin/sh, which does NOT expand
+# braces, so storage/framework/{cache,...} would make one literal folder and
+# storage/framework/views would be missing ("Please provide a valid cache path").
+RUN mkdir -p \
+        bootstrap/cache \
+        storage/framework/cache \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/framework/testing \
+        storage/logs \
+    && chmod -R 777 storage bootstrap/cache \
     && composer dump-autoload --optimize --no-dev \
     && (php artisan storage:link 2>/dev/null || true)
 
