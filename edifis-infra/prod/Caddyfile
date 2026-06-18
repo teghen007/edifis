@@ -8,10 +8,9 @@
 {
 	email admin@myedifis.com
 	# On-demand TLS: issue a cert when a new (allowed) hostname is first hit.
+	# (Newer Caddy removed the interval/burst options — the `ask` gate is enough.)
 	on_demand_tls {
 		ask http://app:8000/api/tenancy/domain-allowed
-		interval 2m
-		burst 5
 	}
 }
 
