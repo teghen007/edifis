@@ -10,7 +10,7 @@ RUN apk add --no-cache \
     postgresql-client \
     supervisor \
     brotli-dev \
-    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl
+    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix posix
 
 RUN pecl install redis swoole \
     && docker-php-ext-enable redis swoole
@@ -24,7 +24,9 @@ WORKDIR /var/www
 # --no-scripts: artisan package:discover can't run yet (app code not copied).
 COPY composer.json composer.lock ./
 
-RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --optimize-autoloader
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --optimize-autoloader \
+    --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix \
+    --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix
 
 COPY . .
 
