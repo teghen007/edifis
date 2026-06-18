@@ -6,11 +6,12 @@ RUN apk add --no-cache \
     $PHPIZE_DEPS \
     libpng-dev \
     libzip-dev \
+    oniguruma-dev \
     postgresql-dev \
     postgresql-client \
     supervisor \
     brotli-dev \
-    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix
+    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix mbstring bcmath
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -19,7 +20,7 @@ WORKDIR /var/www
 COPY composer.json composer.lock ./
 
 RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist --optimize-autoloader \
-    --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix
+    --ignore-platform-reqs
 
 COPY . .
 
