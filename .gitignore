@@ -38,3 +38,6 @@ Thumbs.db
 
 # Keep empty scaffold dirs
 !**/.gitkeep
+
+# Large APK served statically by Caddy (uploaded out-of-band, never committed)
+edifis-infra/prod/landing/*.apk

@@ -17,8 +17,20 @@
 # Homepage / central domain — served by the app (Laravel Blade marketing pages,
 # the onboarding-request form, and the PEA super-admin Filament panel).
 myedifis.com, www.myedifis.com {
-	reverse_proxy app:8000
 	encode gzip
+	root * /srv/landing
+
+	# Static homepage + Android APK download — served directly by Caddy.
+	@static path / /index.html /app.apk /favicon.ico /assets/*
+	handle @static {
+		header /app.apk Content-Disposition "attachment; filename=edifis-app.apk"
+		file_server
+	}
+
+	# Everything else (Filament super-admin panel, onboarding form, API, auth) -> app.
+	handle {
+		reverse_proxy app:8000
+	}
 }
 
 # All school subdomains -> the EDIFIS app (tenant resolved by Host header).
