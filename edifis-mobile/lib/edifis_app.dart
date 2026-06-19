@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'shared/routing/app_router.dart';
+import 'core/theme/app_theme.dart';
 
-class EdifisApp extends StatelessWidget {
+class EdifisApp extends ConsumerWidget {
   const EdifisApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'EDIFIS',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF1B5E20),
-        useMaterial3: true,
-      ),
-      routerConfig: appRouter,
+      theme: AppTheme.light,
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }
