@@ -13,6 +13,10 @@ class PublicWebsiteController
 {
     public function landing()
     {
+        if (function_exists('tenant') && tenant()) {
+            return (new SchoolHomeController())->index();
+        }
+
         return view('public.landing');
     }
 

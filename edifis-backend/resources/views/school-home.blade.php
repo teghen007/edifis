@@ -1,39 +1,3 @@
-# DeepSeek Phase A — Per-school public homepage (tenant landing)
-
-> VPS task (backend, Laravel/Blade). **Goal:** every school subdomain `<school>.myedifis.com/`
-> serves a branded single-page site showing THAT school's name, with Parent + Staff sign-in.
-> Right now the tenant root `/` returns 404. Any new school onboarded must automatically get this.
->
-> ## RULES (always)
-> - START: `cd /opt/edifis && git pull`
-> - Backend code is baked into the image → after changes you MUST **rebuild**:
->   `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build app horizon`
->   (a plain restart will NOT pick up new code — this is the bug that caused the /me 404).
-> - END: `git add -A && git commit -m "feat: per-school homepage" && git push`
-> - When done, delete this file, report "Phase A done" + the curl checks.
-
-## 1. Route — tenant root `/` renders the school home
-The current `/` route (PublicWebsiteController@landing) is the CENTRAL homepage (myedifis.com).
-For **tenant** subdomains, the `/` route must render the new school home with the tenant's name.
-- Find where tenant web routes live (stancl/tenancy — likely `routes/tenant.php`, or a domain-scoped
-  group). Add: `Route::get('/', [App\Http\Controllers\SchoolHomeController::class, 'index'])->name('school.home');`
-- Create `SchoolHomeController@index` that resolves the **current tenant's display name** (e.g.
-  `tenant('name')` / `tenancy()->tenant->name` — whatever this codebase uses; the onboard command
-  set names like "PSS Nkwen") and returns the view:
-  ```php
-  return view('school-home', ['schoolName' => $name]);
-  ```
-- Make sure this does NOT break the central `myedifis.com/` homepage (that must stay as-is).
-
-## 2. Login button targets
-- **Staff Sign-in** → `/staff` (the existing Filament panel — works).
-- **Parent Sign-in** → if a parent WEB login page exists, link to it; otherwise link to the app
-  download `https://myedifis.com/app.apk` with text "Get the app". Use what actually exists — tell
-  me in your report which you wired.
-
-## 3. Create the view `resources/views/school-home.blade.php`
-Wisdom Blue, glossy, single page with sticky navbar + Hero/About/Services/Contact. Uses `{{ $schoolName }}`.
-```blade
 <!doctype html>
 <html lang="en">
 <head>
@@ -125,15 +89,3 @@ Wisdom Blue, glossy, single page with sticky navbar + Hero/About/Services/Contac
   </div></footer>
 </body>
 </html>
-```
-> Pass `$parentUrl` from the controller (the parent web login if it exists, else leave null and the
-> template falls back to the app download). Ensure `public/brand/logo-white.png` exists (copy from
-> `edifis-brand/logo/generated/full-white.png` if missing).
-
-## 4. Verify (paste these)
-```bash
-curl -s -o /dev/null -w "root: %{http_code}\n" https://pssnkwen.myedifis.com/        # expect 200
-curl -s https://pssnkwen.myedifis.com/ | grep -o "PSS Nkwen" | head -1               # school name present
-curl -s -o /dev/null -w "central still ok: %{http_code}\n" https://myedifis.com/      # expect 200 (unchanged)
-```
-Report "Phase A done" + these outputs + which parent URL you wired.
