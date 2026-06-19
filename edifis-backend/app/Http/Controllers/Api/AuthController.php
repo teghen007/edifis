@@ -55,6 +55,19 @@ class AuthController
         return response()->json($result);
     }
 
+    public function me(Request $request): JsonResponse
+    {
+        $u = $request->user();
+
+        return response()->json([
+            'user_id'     => $u->id,
+            'name'        => $u->name,
+            'role'        => $u->getRoleNames()->first(),
+            'email'       => $u->email,
+            'school_name' => config('app.name'),
+        ]);
+    }
+
     public function revocations(Request $request, RevocationList $list): JsonResponse
     {
         $since = $request->query('since')

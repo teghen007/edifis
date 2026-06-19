@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\IssuanceController;
@@ -41,6 +42,8 @@ Route::post('/parent/login', [ParentAuthController::class, 'login'])->name('pare
 Route::post('/parent/verify-otp', [ParentAuthController::class, 'verifyOtp'])->name('parent.verify-otp');
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
+    Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
     Route::post('/students', [StudentController::class, 'store'])
         ->middleware('role:secretary|bursar')
         ->name('students.store');
