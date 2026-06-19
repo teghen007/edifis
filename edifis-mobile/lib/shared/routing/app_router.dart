@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/config/school_config.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/parent_login_screen.dart';
+import '../../features/auth/parent_otp_screen.dart';
 import '../../features/onboarding/school_picker_screen.dart';
 import '../../features/parent/parent_dashboard_screen.dart';
 import '../../features/staff/staff_home_screen.dart';
@@ -19,13 +21,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authProvider);
       final loc = state.matchedLocation;
       if (!hasSchool) return loc == '/onboarding' ? null : '/onboarding';
-      if (auth == null) return loc == '/login' ? null : '/login';
-      if (loc == '/onboarding' || loc == '/login') return '/${auth.role.jsonValue}';
+      const authFree = {'/login', '/parent-login', '/parent-otp'};
+      if (auth == null) return authFree.contains(loc) ? null : '/login';
+      if (loc == '/onboarding' || loc == '/login' || loc == '/parent-login' || loc == '/parent-otp') return '/${auth.role.jsonValue}';
       return null;
     },
     routes: [
       GoRoute(path: '/onboarding', builder: (c, s) => const SchoolPickerScreen()),
       GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
+      GoRoute(path: '/parent-login', builder: (c, s) => const ParentLoginScreen()),
+      GoRoute(path: '/parent-otp', builder: (c, s) => ParentOtpScreen(phone: s.extra as String)),
       GoRoute(path: '/parent', builder: (c, s) => const ParentDashboardScreen()),
       GoRoute(path: '/principal', builder: (c, s) => const StaffHomeScreen(roleName: 'Principal')),
       GoRoute(path: '/vice_principal', builder: (c, s) => const StaffHomeScreen(roleName: 'Vice Principal')),

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/school_config.dart';
 import '../services/auth_api.dart';
+import '../services/dashboard_api.dart';
 import 'app_role.dart';
 
 class AuthData {
@@ -44,6 +45,20 @@ class AuthNotifier extends Notifier<AuthData?> {
   }
 
   Future<void> logout() async { await _clearPrefs(); state = null; }
+
+  Future<void> setParentSession(String token, String? deviceToken, String phone) async {
+    await _p.setString(_kToken, token);
+    final me = await ref.read(dashboardApiProvider).me();
+    final auth = AuthData(token: token, role: AppRole.fromJson(me.role),
+        userId: me.userId, expiresAt: DateTime.now().add(const Duration(days: 30)));
+    await _p.setString(_kRole, auth.role.jsonValue);
+    await _p.setString(_kUser, auth.userId);
+    await _p.setString(_kExp, auth.expiresAt.toIso8601String());
+    if (deviceToken != null) await _p.setString('parent_device_$phone', deviceToken);
+    state = auth;
+  }
+
+  String? parentDeviceToken(String phone) => _p.getString('parent_device_$phone');
 
   Future<void> _clearPrefs() async {
     await _p.remove(_kToken); await _p.remove(_kRole);

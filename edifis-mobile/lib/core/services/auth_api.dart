@@ -15,21 +15,22 @@ class AuthApi {
     return res.data as Map<String, dynamic>;
   }
 
-  /// Parent phone login (was `login`).
-  Future<Map<String, dynamic>> parentLogin(String phone, String credential) async {
-    final res = await _dio.post('/parent/login', data: {
-      'phone': phone,
-      'credential': credential,
-    });
-    return res.data;
+  /// Parent phone login.
+  Future<Map<String, dynamic>> parentLogin(String phone, String credential,
+      {String? deviceToken, String deviceName = 'EDIFIS App'}) async {
+    final body = <String, dynamic>{
+      'phone': phone, 'credential': credential, 'device_name': deviceName,
+    };
+    if (deviceToken != null) body['device_token'] = deviceToken;
+    final res = await _dio.post('/parent/login', data: body);
+    return res.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> verifyOtp(String phone, String code) async {
-    final res = await _dio.post('/parent/verify-otp', data: {
-      'phone': phone,
-      'code': code,
-    });
-    return res.data;
+  Future<Map<String, dynamic>> verifyOtp(String phone, String code,
+      {String deviceName = 'EDIFIS App'}) async {
+    final res = await _dio.post('/parent/verify-otp',
+      data: {'phone': phone, 'code': code, 'device_name': deviceName});
+    return res.data as Map<String, dynamic>;
   }
 
   Future<Map<String, dynamic>> setPin(String pin) async {
