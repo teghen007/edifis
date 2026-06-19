@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use App\Domain\Students\Models\Student;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -58,5 +59,15 @@ class User extends Authenticatable implements FilamentUser
             'principal', 'vice_principal', 'bursar', 'class_master',
             'subject_teacher', 'discipline_master', 'secretary',
         ]);
+    }
+
+    public function children()
+    {
+        return $this->belongsToMany(Student::class, 'guardian_student', 'guardian_id', 'student_id');
+    }
+
+    public function ownsStudent(string $studentId): bool
+    {
+        return $this->children()->whereKey($studentId)->exists();
     }
 }

@@ -16,21 +16,22 @@ class ParentPortalController
 {
     public function children(Request $request): JsonResponse
     {
-        // In production: guardian-child relationships via a pivot table.
-        // For pilot: return all students (demo). Production would be:
-        //   $studentIds = GuardianStudent::where('guardian_id', $request->user()->id)->pluck('student_id');
         return response()->json(
-            Student::where('active', true)->limit(20)->get()
+            $request->user()->children()->where('active', true)->get()
         );
     }
 
-    public function childBalance(string $studentId, BalanceQuery $balance): JsonResponse
+    public function childBalance(Request $request, string $studentId, BalanceQuery $balance): JsonResponse
     {
+        abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');
+
         return response()->json($balance->get($studentId));
     }
 
-    public function childResults(string $studentId): JsonResponse
+    public function childResults(Request $request, string $studentId): JsonResponse
     {
+        abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');
+
         $marks = Mark::where('student_id', $studentId)
             ->where('published', true)
             ->get();
@@ -47,8 +48,10 @@ class ParentPortalController
         ]);
     }
 
-    public function childAttendance(string $studentId): JsonResponse
+    public function childAttendance(Request $request, string $studentId): JsonResponse
     {
+        abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');
+
         $events = AttendanceEvent::where('student_id', $studentId)
             ->where('status', 'present')
             ->count();
