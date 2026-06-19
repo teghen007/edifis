@@ -44,3 +44,5 @@ edifis-infra/prod/landing/*.apk
 
 # Production secrets — never commit
 edifis-infra/prod/.env.prod
+
+edifis-brand/_homepage-localpreview.html
