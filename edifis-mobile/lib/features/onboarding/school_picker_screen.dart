@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/config/school_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -57,7 +58,7 @@ class _SchoolPickerScreenState extends ConsumerState<SchoolPickerScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset('assets/brand/logo-white.png', height: 84),
+                  Image.asset('assets/brand/logo-white.png', height: 84).animate().fadeIn(duration: 500.ms),
                   const SizedBox(height: 10),
                   const Text('GOD · KNOWLEDGE · GROWTH',
                     style: TextStyle(color: AppColors.blue200, fontSize: 12,
@@ -95,7 +96,8 @@ class _SchoolPickerScreenState extends ConsumerState<SchoolPickerScreen> {
                               label: 'Continue', icon: Icons.arrow_forward, onTap: _continue)),
                       ],
                     ),
-                  ),
+                  ).animate().fadeIn(duration: 400.ms, delay: 150.ms)
+                      .slideY(begin: .1, end: 0, curve: Curves.easeOut),
                   const SizedBox(height: 16),
                   const Text('Ask your school for its myEDIFIS code.',
                     style: TextStyle(color: AppColors.blue200, fontSize: 12)),

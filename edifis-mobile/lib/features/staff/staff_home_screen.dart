@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/services/dashboard_api.dart';
 import '../../core/theme/app_colors.dart';
@@ -65,7 +66,7 @@ class StaffHomeScreen extends ConsumerWidget {
                       data: (m) => '${m.role[0].toUpperCase()}${m.role.substring(1)} · ${m.schoolName}',
                       orElse: () => roleName),
                     style: const TextStyle(color: AppColors.blue100, fontSize: 13)),
-                ])),
+                ]).animate().fadeIn(duration: 400.ms).slideX(begin: -.08, end: 0)),
                 IconButton(
                   icon: const Icon(LucideIcons.logOut, color: Colors.white),
                   onPressed: () async {
@@ -118,7 +119,8 @@ class StaffHomeScreen extends ConsumerWidget {
                               Text(c.label, style: const TextStyle(
                                 fontSize: 12.5, color: AppColors.muted)),
                             ]),
-                          ]));
+                          ])).animate().fadeIn(duration: 300.ms, delay: (i * 70).ms)
+                              .slideY(begin: .15, end: 0, curve: Curves.easeOut, duration: 300.ms);
                       },
                       childCount: cards.length))),
           ),

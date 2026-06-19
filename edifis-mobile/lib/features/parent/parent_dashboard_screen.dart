@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/services/dashboard_api.dart';
 import '../../core/services/parent_api.dart';
@@ -67,7 +68,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                   Text(
                     me.maybeWhen(data: (m) => m.name, orElse: () => 'Parent'),
                     style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                ])),
+                ]).animate().fadeIn(duration: 400.ms).slideX(begin: -.08, end: 0)),
                 IconButton(
                   icon: const Icon(LucideIcons.logOut, color: Colors.white),
                   onPressed: () async {

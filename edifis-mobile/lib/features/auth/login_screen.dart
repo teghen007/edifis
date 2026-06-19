@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -49,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: SafeArea(child: Center(child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Image.asset('assets/brand/logo-white.png', height: 76),
+            Image.asset('assets/brand/logo-white.png', height: 76).animate().fadeIn(duration: 500.ms),
             const SizedBox(height: 24),
             GlassCard(child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -76,7 +77,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: CircularProgressIndicator()))
                   : Center(child: GlossyButton(
                       label: 'Sign in', icon: Icons.login, onTap: _signIn)),
-              ])),
+                ])).animate().fadeIn(duration: 400.ms, delay: 150.ms)
+                    .slideY(begin: .1, end: 0, curve: Curves.easeOut),
             const SizedBox(height: 16),
             TextButton(onPressed: () => context.go('/parent-login'),
               child: const Text('Parent? Sign in here',

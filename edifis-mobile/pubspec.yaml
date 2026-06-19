@@ -24,6 +24,7 @@ dependencies:
   firebase_messaging: ^15.0.0
   lucide_icons: ^0.257.0
   shared_preferences: ^2.0.0
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
