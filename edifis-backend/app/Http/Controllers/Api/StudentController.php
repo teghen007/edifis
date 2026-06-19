@@ -5,11 +5,28 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Domain\Students\Actions\EnrolStudent;
+use App\Domain\Students\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class StudentController
 {
+    public function index(Request $request): JsonResponse
+    {
+        $students = Student::where('active', true)
+            ->orderBy('family_name')
+            ->orderBy('given_name')
+            ->get()
+            ->map(fn (Student $s) => [
+                'id'         => $s->id,
+                'name'       => trim($s->given_name . ' ' . $s->family_name),
+                'class_name' => '',
+                'active'     => (bool) $s->active,
+            ]);
+
+        return response()->json($students);
+    }
+
     public function store(Request $request, EnrolStudent $enrolStudent): JsonResponse
     {
         $validated = $request->validate([

@@ -47,6 +47,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/students', [StudentController::class, 'store'])
         ->middleware('role:secretary|bursar')
         ->name('students.store');
+    Route::get('/students', [StudentController::class, 'index'])
+        ->middleware('role:principal|vice_principal|secretary|bursar|class_master|subject_teacher|discipline_master')
+        ->name('students.index');
 
     Route::post('/academics/marks', [MarksController::class, 'store'])
         ->middleware('role:subject_teacher|class_master|principal')
