@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Domain\Academics\Models\Mark;
+use App\Domain\Academics\Models\SchoolClass;
+use App\Domain\Academics\Models\Subject;
 use App\Domain\Attendance\Models\AttendanceEvent;
 use App\Domain\Attendance\Models\AttendanceSession;
 use App\Domain\Issuance\Models\CatalogueItem;
@@ -37,11 +39,97 @@ class DemoDataSeeder extends Seeder
 
     private array $studentIds = [];
 
+    private function seedClasses(): void
+    {
+        $classes = [
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Form 1',        'level' => 1],
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Form 2',        'level' => 2],
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Form 3',        'level' => 3],
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Form 4',        'level' => 4],
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Form 5',        'level' => 5],
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Lower Sixth',   'level' => 6],
+            ['id' => (string) Uuid::uuid7(), 'name' => 'Upper Sixth',   'level' => 7],
+        ];
+
+        $count = 0;
+        foreach ($classes as $c) {
+            $exists = SchoolClass::where('name', $c['name'])->exists();
+            if (! $exists) {
+                SchoolClass::create($c);
+                $count++;
+            }
+        }
+        $this->command->info("[classes] {$count} new / " . count($classes) . " total");
+    }
+
+    private function seedSubjects(): void
+    {
+        $subjects = [
+            ['name' => 'Biology',           'code' => 'BIO'],
+            ['name' => 'Chemistry',         'code' => 'CHE'],
+            ['name' => 'Citizenship',       'code' => 'CIT'],
+            ['name' => 'Computer Science',  'code' => 'CSC'],
+            ['name' => 'Economics',         'code' => 'ECO'],
+            ['name' => 'English Language',  'code' => 'ENG'],
+            ['name' => 'French',            'code' => 'FRE'],
+            ['name' => 'Geography',         'code' => 'GEO'],
+            ['name' => 'History',           'code' => 'HIS'],
+            ['name' => 'Literature in English', 'code' => 'LIT'],
+            ['name' => 'Mathematics',       'code' => 'MAT'],
+            ['name' => 'Physics',           'code' => 'PHY'],
+            ['name' => 'Religious Studies', 'code' => 'RES'],
+        ];
+
+        $count = 0;
+        foreach ($subjects as $s) {
+            $exists = Subject::where('code', $s['code'])->exists();
+            if (! $exists) {
+                Subject::create([
+                    'id' => (string) Uuid::uuid7(),
+                    'name' => $s['name'],
+                    'code' => $s['code'],
+                ]);
+                $count++;
+            }
+        }
+        $this->command->info("[subjects] {$count} new / " . count($subjects) . " total");
+    }
+
+    private function assignStudentClasses(): void
+    {
+        $classes = SchoolClass::where('active', true)
+            ->where('level', '<=', 5)
+            ->orderBy('level')
+            ->get();
+
+        if ($classes->isEmpty()) {
+            $this->command->warn('[assign] no classes found — run seedClasses first.');
+            return;
+        }
+
+        $classIds = $classes->pluck('id')->all();
+        $updated = 0;
+
+        foreach ($this->studentIds as $i => $studentId) {
+            $student = Student::find($studentId);
+            if ($student && $student->class_id === null) {
+                $student->class_id = $classIds[$i % count($classIds)];
+                $student->save();
+                $updated++;
+            }
+        }
+
+        $this->command->info("[assign] {$updated} students assigned to classes.");
+    }
+
     public function run(): void
     {
         $this->command->info('=== DemoDataSeeder ===');
 
+        $this->seedClasses();
+        $this->seedSubjects();
         $this->seedStudents();
+        $this->assignStudentClasses();
         $this->seedMarks();
         $this->seedAttendance();
         $this->seedFees();

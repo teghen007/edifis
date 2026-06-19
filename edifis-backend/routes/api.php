@@ -50,6 +50,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/students', [StudentController::class, 'index'])
         ->middleware('role:principal|vice_principal|secretary|bursar|class_master|subject_teacher|discipline_master')
         ->name('students.index');
+    Route::get('/classes', [\App\Http\Controllers\Api\SchoolClassController::class, 'index'])
+        ->name('classes.index');
+    Route::get('/subjects', [\App\Http\Controllers\Api\SubjectController::class, 'index'])
+        ->name('subjects.index');
 
     Route::post('/academics/marks', [MarksController::class, 'store'])
         ->middleware('role:subject_teacher|class_master|principal')

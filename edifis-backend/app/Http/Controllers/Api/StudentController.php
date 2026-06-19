@@ -20,7 +20,8 @@ class StudentController
             ->map(fn (Student $s) => [
                 'id'         => $s->id,
                 'name'       => trim($s->given_name . ' ' . $s->family_name),
-                'class_name' => '',
+                'class_name' => optional($s->schoolClass)->name ?? '',
+                'class_id'   => $s->class_id,
                 'active'     => (bool) $s->active,
             ]);
 

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Students\Models;
 
+use App\Domain\Academics\Models\SchoolClass;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Student extends Model
 {
@@ -23,6 +24,7 @@ class Student extends Model
         'sex',
         'date_of_birth',
         'current_class_id',
+        'class_id',
         'photo_ref',
         'enrolled_at',
         'demographics_revision',
@@ -38,5 +40,10 @@ class Student extends Model
             'active' => 'boolean',
             'synced_time' => 'datetime',
         ];
+    }
+
+    public function schoolClass(): BelongsTo
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 }
