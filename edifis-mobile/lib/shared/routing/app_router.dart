@@ -10,6 +10,8 @@ import '../../features/onboarding/school_picker_screen.dart';
 import '../../features/parent/parent_dashboard_screen.dart';
 import '../../features/staff/staff_home_screen.dart';
 
+import '../../features/staff/students_screen.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -39,6 +41,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/subject_teacher', builder: (c, s) => const StaffHomeScreen(roleName: 'Subject Teacher')),
       GoRoute(path: '/discipline_master', builder: (c, s) => const StaffHomeScreen(roleName: 'Discipline Master')),
       GoRoute(path: '/secretary', builder: (c, s) => const StaffHomeScreen(roleName: 'Secretary')),
+      GoRoute(path: '/students', builder: (c, s) => const StudentsScreen()),
     ],
   );
 });

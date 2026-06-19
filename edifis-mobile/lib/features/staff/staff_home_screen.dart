@@ -101,7 +101,7 @@ class StaffHomeScreen extends ConsumerWidget {
                     delegate: SliverChildBuilderDelegate(
                       (context, i) {
                         final c = cards[i];
-                        return GlassCard(child: Column(
+                        final card = GlassCard(child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -121,6 +121,10 @@ class StaffHomeScreen extends ConsumerWidget {
                             ]),
                           ])).animate().fadeIn(duration: 300.ms, delay: (i * 70).ms)
                               .slideY(begin: .15, end: 0, curve: Curves.easeOut, duration: 300.ms);
+                        return GestureDetector(
+                          onTap: () { if (c.key == 'students') context.push('/students'); },
+                          child: card,
+                        );
                       },
                       childCount: cards.length))),
           ),
