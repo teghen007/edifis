@@ -3,47 +3,131 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>EDIFIS — Presbyterian Education Authority</title>
+  <title>myEDIFIS — School management for every school in Cameroon</title>
+  <meta name="description" content="myEDIFIS: results, attendance, fees and communication for schools across Cameroon. Works online and offline. GOD · KNOWLEDGE · GROWTH." />
+  <meta name="theme-color" content="#0F2350" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-180.png" />
   <style>
-    :root { --green:#1B5E20; }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:system-ui,Segoe UI,Roboto,sans-serif; color:#1a1a1a; line-height:1.5; }
-    header { background:var(--green); color:#fff; padding:3rem 1.5rem; text-align:center; }
-    header h1 { font-size:2rem; letter-spacing:.5px; }
-    header p { opacity:.9; margin-top:.5rem; }
-    main { max-width:760px; margin:0 auto; padding:2.5rem 1.5rem; }
-    .card { border:1px solid #e5e7eb; border-radius:12px; padding:1.5rem; margin-bottom:1rem; }
-    .card h2 { color:var(--green); font-size:1.1rem; margin-bottom:.5rem; }
-    a.btn { display:inline-block; background:var(--green); color:#fff; text-decoration:none; padding:.6rem 1.1rem; border-radius:8px; margin-top:.5rem; }
-    footer { text-align:center; color:#6b7280; padding:2rem 1rem; font-size:.9rem; }
-    code { background:#f3f4f6; padding:.1rem .35rem; border-radius:4px; }
+    :root{
+      --b400:#6098FA; --b500:#3B76F6; --b600:#2563EB; --b700:#1D4ED8;
+      --b800:#1E40AF; --b950:#0F2350; --glow:#38BDF8;
+      --ink:#0B1220; --body:#334155; --muted:#64748B;
+      --bg:#F4F7FE; --border:#E2E8F0;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,Segoe UI,Roboto,sans-serif;color:var(--body);background:var(--bg);line-height:1.55}
+    .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+    svg.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+    a{color:inherit}
+
+    .hero{position:relative;overflow:hidden;color:#fff;padding:72px 0 110px;
+      background:
+        radial-gradient(1200px 420px at 82% -12%, rgba(56,189,248,.38), transparent 60%),
+        linear-gradient(135deg, var(--b950) 0%, var(--b800) 45%, var(--b600) 100%);}
+    .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 30%);pointer-events:none}
+    .badge{display:inline-block;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+      background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:.4rem .8rem;border-radius:999px}
+    .hero img.logo{height:110px;width:auto;margin:18px 0 10px;display:block}
+    .motto{font-size:.92rem;letter-spacing:.24em;font-weight:600;color:#bfe6ff;margin-bottom:14px}
+    .hero p{font-size:1.15rem;opacity:.93;max-width:560px}
+    .cta{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:.55rem;font-weight:600;text-decoration:none;font-size:1rem;
+      padding:.9rem 1.45rem;border-radius:14px;transition:transform .15s ease, box-shadow .15s ease}
+    .btn svg.ic{font-size:1.15rem}
+    .btn-primary{color:#06245e;background:linear-gradient(180deg,#bfe6ff,var(--glow));
+      box-shadow:0 10px 30px -6px rgba(56,189,248,.7), inset 0 1px 0 rgba(255,255,255,.7)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 42px -6px rgba(56,189,248,.9)}
+    .btn-ghost{color:#fff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.35)}
+    .btn-ghost:hover{background:rgba(255,255,255,.16)}
+
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:-64px auto 0;position:relative;z-index:2}
+    .card{background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border:1px solid #fff;border-radius:18px;padding:24px;
+      box-shadow:0 22px 54px -22px rgba(15,35,80,.4)}
+    .card h3{color:var(--b800);font-size:1.08rem;margin-bottom:6px}
+    .card p{font-size:.93rem;color:var(--muted)}
+    .ico{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin-bottom:14px;font-size:1.45rem;
+      color:#fff;background:linear-gradient(135deg,var(--b600),var(--b400));box-shadow:0 8px 18px -6px rgba(37,99,235,.6)}
+
+    section{padding:72px 0}
+    .download{margin:14px 0}
+    .dl{background:linear-gradient(135deg,var(--b700),var(--b500));color:#fff;border-radius:22px;padding:42px;
+      display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;
+      box-shadow:0 30px 70px -30px rgba(15,35,80,.6);position:relative;overflow:hidden}
+    .dl::after{content:"";position:absolute;inset:0;background:radial-gradient(600px 200px at 90% -20%,rgba(56,189,248,.4),transparent 60%)}
+    .dl h2{font-size:1.5rem;margin-bottom:6px;position:relative}
+    .dl p{opacity:.92;max-width:460px;position:relative}
+    .dl .act{position:relative;text-align:center}
+    .dl small{display:block;opacity:.85;font-size:.78rem;margin-top:10px;max-width:220px}
+
+    footer{background:var(--b950);color:#cbd5e1;padding:40px 0}
+    .foot{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .foot img{height:46px;width:auto}
+    .foot .m{font-size:.78rem;letter-spacing:.2em;color:#93BBFD}
+    .foot .c{font-size:.85rem;color:#94a3b8}
+    @media(max-width:760px){.cards{grid-template-columns:1fr}.dl{grid-template-columns:1fr;text-align:center}.dl .act{margin:0 auto}}
   </style>
 </head>
 <body>
-  <header>
-    <h1>EDIFIS</h1>
-    <p>Educational Data Infrastructure &amp; Foundational Information System · GOD — PEACE — KNOWLEDGE</p>
+  <header class="hero">
+    <div class="wrap">
+      <span class="badge">For every school in Cameroon</span>
+      <img class="logo" src="/assets/full-white.png" alt="myEDIFIS" />
+      <div class="motto">GOD · KNOWLEDGE · GROWTH</div>
+      <p>One platform for results, attendance, fees and communication — built for schools across Cameroon, online or offline.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#download">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Download the app
+        </a>
+        <a class="btn btn-ghost" href="#features">
+          See what it does
+          <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
   </header>
-  <main>
-    <div class="card">
-      <h2>For schools &amp; staff</h2>
-      <p>Open your school's workspace at <code>https://&lt;your-school&gt;.myedifis.com</code> (e.g. <code>pssnkwen.myedifis.com</code>).</p>
+
+  <div class="wrap">
+    <div class="cards" id="features">
+      <div class="card">
+        <div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg></div>
+        <h3>For staff</h3><p>Principals, bursars and teachers manage marks, attendance and fees in one place.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>For parents</h3><p>See your child's results, attendance and fees — and get instant notifications.</p>
+      </div>
+      <div class="card">
+        <div class="ico"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/><path d="M5 12.859a10 10 0 0 1 5.17-2.69"/><path d="M19 12.859a10 10 0 0 0-2.007-1.523"/><path d="M2 8.82a15 15 0 0 1 4.177-2.643"/><path d="M22 8.82a15 15 0 0 0-11.288-3.764"/><path d="m2 2 20 20"/></svg></div>
+        <h3>Works offline</h3><p>Keeps running when the internet drops, then syncs automatically.</p>
+      </div>
     </div>
-    <div class="card">
-      <h2>For parents &amp; guardians</h2>
-      <p>Sign in with your phone number to see your child's results, attendance, and fees, and get notifications.</p>
-      <a class="btn" href="https://pssnkwen.myedifis.com/parent">Parent portal</a>
+  </div>
+
+  <section class="wrap" id="download">
+    <div class="dl">
+      <div>
+        <h2>Get the myEDIFIS Android app</h2>
+        <p>Faster access and push notifications for staff and parents. Open this page on your phone to install.</p>
+      </div>
+      <div class="act">
+        <a class="btn btn-primary" href="/app.apk" download>
+          <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          Download APK
+        </a>
+        <small>After downloading, tap the file → Install. If Android warns you, choose “Allow from this source”.</small>
+      </div>
     </div>
-    <div class="card">
-      <h2>Get the Android app</h2>
-      <p>Install the EDIFIS app for faster access and push notifications.</p>
-      <a class="btn" href="/app.apk" download>⬇ Download Android app (APK)</a>
-      <p style="margin-top:.75rem;color:#6b7280;font-size:.9rem;">
-        After downloading, open the file and tap <strong>Install</strong>. If Android warns you,
-        choose <strong>Settings → Allow from this source</strong>, then install. iOS coming later.
-      </p>
+  </section>
+
+  <footer>
+    <div class="wrap foot">
+      <img src="/assets/full-white.png" alt="myEDIFIS" />
+      <span class="m">GOD · KNOWLEDGE · GROWTH</span>
+      <span class="c">© <span id="y"></span> myEDIFIS · School management for Cameroon</span>
     </div>
-  </main>
-  <footer>© Presbyterian Education Authority (PEA), Cameroon · EDIFIS</footer>
+  </footer>
+  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
 </body>
 </html>
