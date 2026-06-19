@@ -8,7 +8,15 @@ class AuthApi {
   final Dio _dio;
   AuthApi(this._dio);
 
-  Future<Map<String, dynamic>> login(String phone, String credential) async {
+  /// Staff/unified login. Returns { token, expires_at, role, user_id }.
+  Future<Map<String, dynamic>> login(String identifier, String password) async {
+    final res = await _dio.post('/auth/login',
+      data: {'identifier': identifier, 'password': password});
+    return res.data as Map<String, dynamic>;
+  }
+
+  /// Parent phone login (was `login`).
+  Future<Map<String, dynamic>> parentLogin(String phone, String credential) async {
     final res = await _dio.post('/parent/login', data: {
       'phone': phone,
       'credential': credential,
