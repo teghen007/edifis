@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/school_config.dart';
 import '../services/auth_api.dart';
 import '../services/dashboard_api.dart';
+import '../services/parent_api.dart';
 import 'app_role.dart';
 
 class AuthData {
@@ -42,9 +43,10 @@ class AuthNotifier extends Notifier<AuthData?> {
     await _p.setString(_kUser, auth.userId);
     await _p.setString(_kExp, auth.expiresAt.toIso8601String());
     state = auth;
+    _refreshUserData();
   }
 
-  Future<void> logout() async { await _clearPrefs(); state = null; }
+  Future<void> logout() async { await _clearPrefs(); state = null; _refreshUserData(); }
 
   Future<void> setParentSession(String token, String? deviceToken, String phone) async {
     await _p.setString(_kToken, token);
@@ -56,6 +58,7 @@ class AuthNotifier extends Notifier<AuthData?> {
     await _p.setString(_kExp, auth.expiresAt.toIso8601String());
     if (deviceToken != null) await _p.setString('parent_device_$phone', deviceToken);
     state = auth;
+    _refreshUserData();
   }
 
   String? parentDeviceToken(String phone) => _p.getString('parent_device_$phone');
@@ -63,6 +66,15 @@ class AuthNotifier extends Notifier<AuthData?> {
   Future<void> _clearPrefs() async {
     await _p.remove(_kToken); await _p.remove(_kRole);
     await _p.remove(_kUser);  await _p.remove(_kExp);
+  }
+
+  void _refreshUserData() {
+    ref.invalidate(meProvider);
+    ref.invalidate(dashboardSummaryProvider);
+    ref.invalidate(childrenProvider);
+    ref.invalidate(childResultsProvider);
+    ref.invalidate(childAttendanceProvider);
+    ref.invalidate(childBalanceProvider);
   }
 }
 
