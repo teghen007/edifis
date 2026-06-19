@@ -76,9 +76,14 @@ class StaffPanelProvider extends PanelProvider
             fn (): string => <<<'HTML'
             <style>
               .fi-simple-layout{background:
-                radial-gradient(1000px 400px at 80% -10%, rgba(56,189,248,.25), transparent 60%),
+                radial-gradient(1200px 480px at 80% -10%, rgba(56,189,248,.35), transparent 60%),
                 linear-gradient(135deg,#0F2350,#1E40AF 50%,#2563EB)!important;}
-              .fi-simple-main{box-shadow:0 30px 70px -30px rgba(15,35,80,.6);border-radius:18px;}
+              .fi-simple-main{background:rgba(255,255,255,.95)!important;border-radius:20px!important;box-shadow:0 30px 80px -30px rgba(15,35,80,.65)!important;padding:2.5rem!important}
+              .fi-logo img{height:2.4rem!important}
+              .fi-input-wrp{box-shadow:0 2px 10px -4px rgba(15,35,80,.12)}
+              .fi-btn{font-weight:700!important;border-radius:11px!important}
+              .fi-btn.fi-color-primary{background:linear-gradient(180deg,#2563EB,#1D4ED8)!important;box-shadow:0 10px 28px -8px rgba(37,99,235,.55)!important}
+              .fi-btn.fi-color-primary:hover{transform:translateY(-2px);box-shadow:0 16px 36px -8px rgba(37,99,235,.65)!important}
             </style>
             HTML,
         );

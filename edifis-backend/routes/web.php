@@ -9,6 +9,10 @@ Route::get('/', [SchoolHomeController::class, 'index'])
     ->middleware(\Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class)
     ->name('school.home');
 
+Route::get('/parents', fn () => view('parents', ['schoolName' => tenant()?->school_name ?? config('app.name')]))
+    ->middleware(\Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class)
+    ->name('school.parents');
+
 // Node-first field workflows — served on campus (.local), also available on cloud
 Route::get('/field/attendance', AttendanceScanner::class)
     ->middleware(['auth', 'role:class_master|subject_teacher'])
