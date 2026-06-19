@@ -2,8 +2,6 @@
 
 // Local dev on PHP 8.5: silence the framework's PDO::MYSQL_ATTR_SSL_CA deprecation
 // so responses (incl. API JSON) stay clean. Harmless; remove on PHP 8.3.
-error_reporting(E_ALL & ~E_DEPRECATED);
-ini_set('display_errors', '0');
 
 use Illuminate\Http\Request;
 

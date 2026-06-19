@@ -41,3 +41,6 @@ Thumbs.db
 
 # Large APK served statically by Caddy (uploaded out-of-band, never committed)
 edifis-infra/prod/landing/*.apk
+
+# Production secrets — never commit
+edifis-infra/prod/.env.prod

@@ -25,6 +25,7 @@ Route::get('/', [PublicWebsiteController::class, 'landing'])->name('public.landi
 Route::post('/onboarding/request', [PublicWebsiteController::class, 'submit'])->name('public.submit');
 
 Route::get('/tenancy/domain-allowed', [TenancyController::class, 'domainAllowed'])
+    ->withoutMiddleware(\Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class)
     ->name('tenancy.domain-allowed');
 
 Route::post('/auth/login', [AuthController::class, 'login'])->name('auth.login');
