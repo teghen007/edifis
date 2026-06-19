@@ -23,7 +23,7 @@ myedifis.com, www.myedifis.com {
 	# Static homepage + Android APK download — served directly by Caddy.
 	@static path / /index.html /app.apk /favicon.ico /assets/*
 	handle @static {
-		header /app.apk Content-Disposition "attachment; filename=edifis-app.apk"
+		header /app.apk Content-Disposition "attachment; filename=EDIFIS-Trial.apk"
 		file_server
 	}
 
