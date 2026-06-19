@@ -84,16 +84,16 @@ function WriteIco([string]$pngPath, [string]$icoPath){
   Write-Host ("  ico -> {0}" -f (Split-Path $icoPath -Leaf))
 }
 
-Write-Host "== ICON (clean white bg) =="
+Write-Host "== ICON (already transparent — no keying) =="
 $icon = To32 (Join-Path $dir 'myedifis-icon.png')
-KeyBg $icon 245 (Join-Path $out 'icon-color.png')
+$icon.Save((Join-Path $out 'icon-color.png'), $PNG); Write-Host "  copied -> icon-color.png"
 $icon.Dispose()
 Recolor (Join-Path $out 'icon-color.png') (Join-Path $out 'icon-white.png') 255 255 255
 Recolor (Join-Path $out 'icon-color.png') (Join-Path $out 'icon-mono-navy.png') 15 35 80
 
-Write-Host "== FULL LOCKUP (gray bg) =="
+Write-Host "== FULL LOCKUP (already transparent — no keying) =="
 $full = To32 (Join-Path $dir 'myedifis-full.png')
-KeyBg $full 212 (Join-Path $out 'full-color.png')
+$full.Save((Join-Path $out 'full-color.png'), $PNG); Write-Host "  copied -> full-color.png"
 $full.Dispose()
 Recolor (Join-Path $out 'full-color.png') (Join-Path $out 'full-white.png') 255 255 255
 
