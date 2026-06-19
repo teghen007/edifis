@@ -7,7 +7,7 @@
   <link rel="icon" href="{{ asset('favicon.ico') }}">
   <style>
     :root{--b300:#93BBFD;--b400:#6098FA;--b500:#3B76F6;--b600:#2563EB;--b700:#1D4ED8;--b800:#1E40AF;--b950:#0F2350;--glow:#38BDF8;--ink:#0B1220;--body:#334155;--muted:#64748B;--bg:#F4F7FE;--border:#E2E8F0;--nav-h:68px;}
-    *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+    *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;overflow-x:hidden}
     body{font-family:system-ui,'Segoe UI',Roboto,sans-serif;color:var(--body);background:var(--bg);line-height:1.6;overflow-x:hidden}
     .wrap{max-width:1140px;margin:0 auto;padding:0 22px}a{text-decoration:none;color:inherit}img{max-width:100%;display:block}
     /* nav */
@@ -58,12 +58,25 @@
     footer .pw{display:inline-flex;align-items:center;gap:9px;font-size:.88rem;color:#93BBFD}footer .pw img{height:24px}
     /* responsive */
     @media(max-width:860px){
-      .statsgrid{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr;gap:26px}
+      .statsgrid{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr 1fr}
+      .two{grid-template-columns:1fr;gap:24px}
+      .two img{height:auto;max-height:300px}
+      .hero{min-height:auto}
+      .hero .inner{padding:60px 0}
+      section{padding:58px 0}
+      .band{padding:34px 22px}
       .menu{position:fixed;inset:var(--nav-h) 0 auto 0;flex-direction:column;align-items:stretch;gap:0;background:rgba(15,35,80,.97);backdrop-filter:blur(14px);max-height:0;overflow:hidden;transition:max-height .3s ease;border-bottom:1px solid rgba(255,255,255,.1)}
       .menu a{padding:16px 22px;border-top:1px solid rgba(255,255,255,.08)}.menu a.pill,.menu a.ghost{margin:12px 22px;text-align:center;justify-content:center}
-      #nz:checked~.menu{max-height:360px}.burger{display:block}
+      #nz:checked~.menu{max-height:400px}.burger{display:block}
     }
-    @media(max-width:520px){.statsgrid{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr}.hero{min-height:92vh}}
+    @media(max-width:520px){
+      .statsgrid{grid-template-columns:1fr 1fr;padding:18px;gap:12px}
+      .cards{grid-template-columns:1fr}
+      .hero .inner{padding:46px 0}
+      .stat b{font-size:1.4rem}
+      .wrap{padding:0 18px}
+      .band{padding:30px 18px}
+    }
   </style>
 </head>
 <body>
