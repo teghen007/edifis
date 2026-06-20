@@ -52,14 +52,18 @@ class TimetableController
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $query = TimetableEntry::query();
+        $query = TimetableEntry::query()
+            ->join('school_classes', 'timetable_entries.class_id', '=', 'school_classes.id')
+            ->join('subjects', 'timetable_entries.subject_id', '=', 'subjects.id')
+            ->join('users', 'timetable_entries.teacher_id', '=', 'users.id')
+            ->select('timetable_entries.*', 'school_classes.name as class_name', 'subjects.name as subject_name', 'users.name as teacher_name');
 
         if ($user->hasRole('subject_teacher')) {
-            $query->where('teacher_id', $user->id);
+            $query->where('timetable_entries.teacher_id', $user->id);
         } elseif ($user->hasRole('class_master')) {
-            $query->where('class_id', $request->query('class_id'));
+            $query->where('timetable_entries.class_id', $request->query('class_id'));
         } elseif ($user->hasRole('parent')) {
-            $query->where('class_id', $request->query('class_id'));
+            $query->where('timetable_entries.class_id', $request->query('class_id'));
         }
 
         return response()->json($query->get());

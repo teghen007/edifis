@@ -382,49 +382,67 @@ class DemoDataSeeder extends Seeder
 
     private function seedTimetable(): void
     {
-        $existing = TimetableEntry::count();
-        if ($existing >= 12) {
-            $this->command->info('[timetable] already seeded — skipped.');
+        $badClasses = array_values(self::CLASS_IDS);
+        $badSubjects = array_values(self::SUBJECT_IDS);
+        $deleted = TimetableEntry::whereIn('class_id', $badClasses)
+            ->orWhereIn('subject_id', $badSubjects)
+            ->delete();
+
+        $realClasses = SchoolClass::where('active', true)->orderBy('level')->get();
+        $realSubjects = Subject::all();
+        $teacher = User::where('email', 'ngufor.calvin@pssnkwen.local')->first();
+        $teacherId = $teacher?->id ?? '00000000-0000-0000-0000-000000000999';
+
+        if ($realClasses->isEmpty() || $realSubjects->isEmpty() || !$teacher) {
+            $this->command->warn('[timetable] missing real classes/subjects/teacher — skipped.');
             return;
         }
 
-        $teacher = User::where('email', 'ngufor.calvin@pssnkwen.local')->first();
-        $teacherId = $teacher?->id ?? '00000000-0000-0000-0000-000000000999';
-        $classIds = array_values(self::CLASS_IDS);
-        $subjects = array_values(self::SUBJECT_IDS);
-        $days = [1, 2, 3, 4, 5];
-        $count = 0;
-
-        foreach ($classIds as $ci => $classId) {
-            foreach (array_slice($days, 0, 3) as $day) {
-                foreach ([['08:00', '09:00'], ['09:00', '10:00'], ['10:30', '11:30']] as $pi => $period) {
-                    if ($count >= 12) break 3;
-
-                    $exists = TimetableEntry::where('class_id', $classId)
-                        ->where('day_of_week', $day)
-                        ->where('period_start', $period[0])
-                        ->exists();
-
-                    if (! $exists) {
-                        TimetableEntry::create([
-                            'id' => (string) Uuid::uuid7(),
-                            'class_id' => $classId,
-                            'subject_id' => $subjects[($ci + $pi) % count($subjects)],
-                            'teacher_id' => $teacherId,
-                            'day_of_week' => $day,
-                            'period_start' => $period[0],
-                            'period_end' => $period[1],
-                            'room' => 'Room ' . ($ci + 1),
-                            'created_by' => $teacherId,
-                            'is_approved' => $count < 9,
-                        ]);
-                        $count++;
-                    }
-                }
-            }
+        $existing = TimetableEntry::count();
+        if ($existing >= 10) {
+            $this->command->info('[timetable] already seeded with real ids — skipped.');
+            return;
         }
 
-        $this->command->info("[timetable] {$count} entries seeded.");
+        $classIds = $realClasses->pluck('id')->all();
+        $subjectIds = $realSubjects->pluck('id')->all();
+        $rooms = ['Room A', 'Room B', 'Lab 1', 'Lab 2', 'Hall'];
+        $count = 0;
+
+        $entries = [
+            ['class_idx' => 0, 'subj_idx' => 0, 'day' => '1', 'start' => '08:00', 'end' => '09:00', 'room' => 0],
+            ['class_idx' => 0, 'subj_idx' => 1, 'day' => '1', 'start' => '09:00', 'end' => '10:00', 'room' => 1],
+            ['class_idx' => 0, 'subj_idx' => 2, 'day' => '2', 'start' => '08:00', 'end' => '09:00', 'room' => 0],
+            ['class_idx' => 1, 'subj_idx' => 3, 'day' => '1', 'start' => '08:00', 'end' => '09:00', 'room' => 1],
+            ['class_idx' => 1, 'subj_idx' => 4, 'day' => '2', 'start' => '09:00', 'end' => '10:00', 'room' => 2],
+            ['class_idx' => 2, 'subj_idx' => 0, 'day' => '3', 'start' => '08:00', 'end' => '09:00', 'room' => 3],
+            ['class_idx' => 2, 'subj_idx' => 1, 'day' => '3', 'start' => '09:00', 'end' => '10:00', 'room' => 4],
+            ['class_idx' => 2, 'subj_idx' => 2, 'day' => '4', 'start' => '08:00', 'end' => '09:00', 'room' => 0],
+            ['class_idx' => 3, 'subj_idx' => 3, 'day' => '4', 'start' => '09:00', 'end' => '10:00', 'room' => 1],
+            ['class_idx' => 3, 'subj_idx' => 4, 'day' => '5', 'start' => '08:00', 'end' => '09:00', 'room' => 2],
+        ];
+
+        foreach ($entries as $i => $e) {
+            $classId = $classIds[$e['class_idx'] % count($classIds)];
+            $subjectId = $subjectIds[$e['subj_idx'] % count($subjectIds)];
+
+            TimetableEntry::create([
+                'id' => (string) Uuid::uuid7(),
+                'class_id' => $classId,
+                'subject_id' => $subjectId,
+                'teacher_id' => $teacherId,
+                'day_of_week' => $e['day'],
+                'period_start' => $e['start'],
+                'period_end' => $e['end'],
+                'room' => $rooms[$e['room']],
+                'created_by' => $teacherId,
+                'is_approved' => $i < 7,
+            ]);
+            $count++;
+        }
+
+        $pending = $count - 7;
+        $this->command->info("[timetable] {$deleted} old placeholder rows deleted, {$count} entries seeded ({$pending} pending).");
     }
 
     private function seedCalendarEvents(): void
