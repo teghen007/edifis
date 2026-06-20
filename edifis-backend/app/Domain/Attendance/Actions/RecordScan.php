@@ -24,10 +24,6 @@ class RecordScan
     ): mixed {
         $session = AttendanceSession::findOrFail($sessionId);
 
-        if ($source === 'manual_override' && empty($voidReason)) {
-            throw new \InvalidArgumentException('manual_override requires void_reason');
-        }
-
         $idempotencyKey = $sessionId . '-' . $studentId;
         $eventId = (string) Uuid::uuid7();
         $revision = $idempotencyKey; // Stable per session+student
