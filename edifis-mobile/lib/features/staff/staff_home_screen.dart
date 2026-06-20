@@ -131,7 +131,13 @@ class StaffHomeScreen extends ConsumerWidget {
                           ])).animate().fadeIn(duration: 300.ms, delay: (i * 70).ms)
                               .slideY(begin: .15, end: 0, curve: Curves.easeOut, duration: 300.ms);
                         return GestureDetector(
-                          onTap: () { if (c.key == 'students') context.push('/students'); },
+                          onTap: () {
+                            if (c.key == 'students') {
+                              context.push('/students');
+                            } else if (c.key == 'fees' || c.key == 'outstanding' || c.key == 'fees_collected') {
+                              context.push('/fees');
+                            }
+                          },
                           child: card,
                         );
                       },
