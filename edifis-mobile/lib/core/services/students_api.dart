@@ -2,11 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:edifis/core/network/dio_client.dart';
 
 class StudentRow {
-  final String id, name, className;
+  final String id, name, className, classId;
   final bool active;
-  StudentRow({required this.id, required this.name, required this.className, required this.active});
+  StudentRow({required this.id, required this.name, required this.className, required this.classId, required this.active});
   factory StudentRow.fromJson(Map<String, dynamic> j) => StudentRow(
-    id: j['id'] ?? '', name: j['name'] ?? '', className: j['class_name'] ?? '', active: j['active'] ?? true);
+    id: j['id'] ?? '', name: j['name'] ?? '', className: j['class_name'] ?? '',
+    classId: j['class_id'] ?? '', active: j['active'] ?? true);
 }
 
 final studentsProvider = FutureProvider<List<StudentRow>>((ref) async {

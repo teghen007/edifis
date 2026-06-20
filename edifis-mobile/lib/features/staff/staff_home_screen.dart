@@ -38,6 +38,15 @@ class StaffHomeScreen extends ConsumerWidget {
     final summary = ref.watch(dashboardSummaryProvider);
 
     return Scaffold(
+      floatingActionButton: me.maybeWhen(
+        data: (m) => ['subject_teacher','class_master','principal'].contains(m.role)
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.blue600,
+              icon: const Icon(LucideIcons.plus, color: Colors.white),
+              label: const Text('Record mark', style: TextStyle(color: Colors.white)),
+              onPressed: () => context.push('/submit-mark'))
+          : null,
+        orElse: () => null),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(meProvider);
