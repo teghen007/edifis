@@ -88,6 +88,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/fees/students/{studentId}/balance', [FeesController::class, 'balance'])
         ->middleware('role:bursar|parent')
         ->name('fees.balance');
+    Route::get('/fees/balances', [FeesController::class, 'balances'])
+        ->middleware('role:bursar|principal|vice_principal')
+        ->name('fees.balances');
 
     Route::post('/timetable', [TimetableController::class, 'store'])
         ->middleware('role:vice_principal|principal')

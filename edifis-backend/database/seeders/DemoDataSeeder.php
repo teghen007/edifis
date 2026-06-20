@@ -299,51 +299,85 @@ class DemoDataSeeder extends Seeder
     {
         $existing = IssueEvent::where('status', 'issued')->count();
         if ($existing > 10) {
-            $this->command->info('[fees] already seeded — skipped.');
-            return;
-        }
+            $this->command->info('[fees] issue events already seeded — skipped.');
+        } else {
+            $items = CatalogueItem::all();
+            if ($items->isEmpty()) {
+                $this->command->warn('[fees] no catalogue items found — run LabSeeder first.');
+            } else {
+                $staff = User::where('email', 'nebaluices@pssnkwen.local')->first();
+                $staffId = $staff?->id ?? '00000000-0000-0000-0000-000000000999';
+                $count = 0;
 
-        $items = CatalogueItem::all();
-        if ($items->isEmpty()) {
-            $this->command->warn('[fees] no catalogue items found — run LabSeeder first.');
-            return;
-        }
+                foreach (array_slice($this->studentIds, 0, 15) as $studentId) {
+                    $item = $items->random();
+                    $cost = $item->cost;
 
-        $staff = User::where('email', 'nebaluices@pssnkwen.local')->first();
-        $staffId = $staff?->id ?? '00000000-0000-0000-0000-000000000999';
-        $count = 0;
+                    $eventId = (string) Uuid::uuid7();
+                    $batchId = (string) Uuid::uuid7();
+                    IssueEvent::create([
+                        'id' => $eventId,
+                        'revision' => 'r1',
+                        'student_id' => $studentId,
+                        'catalogue_item_id' => $item->id,
+                        'cost' => $cost,
+                        'issued_at' => now()->subDays(random_int(1, 60)),
+                        'staff_id' => $staffId,
+                        'batch_id' => $batchId,
+                        'status' => 'issued',
+                    ]);
+                    $count++;
 
-        foreach (array_slice($this->studentIds, 0, 15) as $studentId) {
-            $item = $items->random();
-            $cost = $item->cost;
+                    if (random_int(0, 1) === 1) {
+                        LedgerEntry::create([
+                            'id' => (string) Uuid::uuid7(),
+                            'student_id' => $studentId,
+                            'source_event_id' => $eventId,
+                            'amount' => $cost,
+                            'posted_at' => now()->subDays(random_int(1, 30)),
+                        ]);
+                    }
+                }
 
-            $eventId = (string) Uuid::uuid7();
-            $batchId = (string) Uuid::uuid7();
-            IssueEvent::create([
-                'id' => $eventId,
-                'revision' => 'r1',
-                'student_id' => $studentId,
-                'catalogue_item_id' => $item->id,
-                'cost' => $cost,
-                'issued_at' => now()->subDays(random_int(1, 60)),
-                'staff_id' => $staffId,
-                'batch_id' => $batchId,
-                'status' => 'issued',
-            ]);
-            $count++;
-
-            if (random_int(0, 1) === 1) {
-                LedgerEntry::create([
-                    'id' => (string) Uuid::uuid7(),
-                    'student_id' => $studentId,
-                    'source_event_id' => $eventId,
-                    'amount' => $cost,
-                    'posted_at' => now()->subDays(random_int(1, 30)),
-                ]);
+                $this->command->info("[fees] {$count} issue events seeded.");
             }
         }
 
-        $this->command->info("[fees] {$count} issue events seeded.");
+        $this->seedTuitionCharges();
+    }
+
+    private function seedTuitionCharges(): void
+    {
+        if (count($this->studentIds) < 10) {
+            return;
+        }
+
+        $firstId = $this->studentIds[0];
+        $existing = LedgerEntry::where('student_id', $firstId)
+            ->where('amount', '>=', 25000)
+            ->count();
+        if ($existing > 0) {
+            $this->command->info('[tuition] charges already seeded — skipped.');
+            return;
+        }
+
+        $count = 0;
+        $targetCount = random_int(10, 12);
+        $studentSlice = array_slice($this->studentIds, 0, $targetCount);
+
+        foreach ($studentSlice as $studentId) {
+            $amount = random_int(25000, 75000);
+            LedgerEntry::create([
+                'id' => (string) Uuid::uuid7(),
+                'student_id' => $studentId,
+                'source_event_id' => (string) Uuid::uuid7(),
+                'amount' => $amount,
+                'posted_at' => now()->subDays(random_int(1, 90)),
+            ]);
+            $count++;
+        }
+
+        $this->command->info("[tuition] {$count} students seeded with tuition charges (25 000 - 75 000 XAF).");
     }
 
     private function seedTimetable(): void
