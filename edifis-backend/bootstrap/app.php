@@ -39,6 +39,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                return response()->json([
+                    'code' => 'validation_failed',
+                    'message' => $e->getMessage(),
+                    'details' => $e->errors(),
+                    'retry_after_seconds' => null,
+                ], 422);
+            }
+
             if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
                 $statusCode = $e->getStatusCode();
                 $code = match ($statusCode) {
@@ -57,7 +66,6 @@ return Application::configure(basePath: dirname(__DIR__))
                     'retry_after_seconds' => null,
                 ], $statusCode);
 
-                // Set custom response for validation/forbidden so the custom message goes through
                 if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException && $e->getHeaders()) {
                     foreach ($e->getHeaders() as $key => $value) {
                         $response->header($key, $value);

@@ -21,7 +21,7 @@ class MarksController
             'subject_id' => ['required', 'uuid'],
             'class_id' => ['required', 'uuid'],
             'sequence' => ['required', 'string'],
-            'owner_teacher_id' => ['required', 'uuid'],
+            'owner_teacher_id' => ['nullable', 'uuid'],
             'score' => ['required', 'numeric', 'min:0'],
             'max_score' => ['required', 'numeric', 'min:1'],
             'coefficient' => ['nullable', 'numeric', 'min:0'],
