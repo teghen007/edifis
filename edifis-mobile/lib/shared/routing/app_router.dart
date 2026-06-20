@@ -14,6 +14,7 @@ import '../../features/staff/students_screen.dart';
 import '../../features/staff/submit_mark_screen.dart';
 import '../../features/staff/fees_screen.dart';
 import '../../features/staff/take_attendance_screen.dart';
+import '../../features/staff/timetable_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -48,6 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/submit-mark', builder: (c, s) => const SubmitMarkScreen()),
       GoRoute(path: '/fees', builder: (c, s) => const FeesScreen()),
       GoRoute(path: '/take-attendance', builder: (c, s) => const TakeAttendanceScreen()),
+      GoRoute(path: '/timetable', builder: (c, s) => const TimetableScreen()),
     ],
   );
 });
