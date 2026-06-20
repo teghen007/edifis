@@ -136,6 +136,8 @@ class StaffHomeScreen extends ConsumerWidget {
                               context.push('/students');
                             } else if (c.key == 'fees' || c.key == 'outstanding' || c.key == 'fees_collected') {
                               context.push('/fees');
+                            } else if (c.key == 'attendance') {
+                              context.push('/take-attendance');
                             }
                           },
                           child: card,
