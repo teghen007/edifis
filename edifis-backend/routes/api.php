@@ -33,6 +33,26 @@ Route::get('/tenancy/domain-allowed', [TenancyController::class, 'domainAllowed'
 Route::post('/auth/login', [AuthController::class, 'login'])->name('auth.login');
 Route::get('/auth/revocations', [AuthController::class, 'revocations'])->name('auth.revocations');
 
+// TEMP diagnostic — remove after debugging Filament login
+Route::get('/_diag/login', function (\Illuminate\Http\Request $r) {
+    $email = (string) $r->query('e');
+    $pw = (string) $r->query('p');
+    $provider = \Illuminate\Support\Facades\Auth::createUserProvider('users');
+    $u = \App\Models\User::where('email', $email)->first();
+    $retrieved = $provider?->retrieveByCredentials(['email' => $email, 'password' => $pw]);
+    return response()->json([
+        'guards' => array_keys(config('auth.guards')),
+        'default_guard' => config('auth.defaults.guard'),
+        'web_provider' => config('auth.guards.web.provider'),
+        'user_found' => (bool) $u,
+        'active' => $u?->active,
+        'hash_check' => $u ? \Illuminate\Support\Facades\Hash::check($pw, $u->password) : null,
+        'provider_retrieved' => (bool) $retrieved,
+        'provider_valid' => $retrieved ? $provider->validateCredentials($retrieved, ['password' => $pw]) : null,
+        'can_access_panel' => $u ? $u->canAccessPanel(\Filament\Facades\Filament::getPanel('staff')) : null,
+    ]);
+});
+
 Route::post('/sync', SyncController::class)->name('sync');
 
 Route::post('/monitoring/node-status', [MonitoringController::class, 'nodeStatus'])
