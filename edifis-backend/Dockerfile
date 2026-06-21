@@ -11,7 +11,8 @@ RUN apk add --no-cache \
     postgresql-client \
     supervisor \
     brotli-dev \
-    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix mbstring bcmath
+    icu-dev \
+    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix mbstring bcmath intl
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
