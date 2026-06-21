@@ -15,6 +15,8 @@ import '../../features/staff/submit_mark_screen.dart';
 import '../../features/staff/fees_screen.dart';
 import '../../features/staff/take_attendance_screen.dart';
 import '../../features/staff/timetable_screen.dart';
+import '../../features/results/report_card_screen.dart';
+import '../../features/results/results_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -50,6 +52,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/fees', builder: (c, s) => const FeesScreen()),
       GoRoute(path: '/take-attendance', builder: (c, s) => const TakeAttendanceScreen()),
       GoRoute(path: '/timetable', builder: (c, s) => const TimetableScreen()),
+      GoRoute(path: '/report-card', builder: (c, s) {
+        final e = s.extra as Map<String, dynamic>? ?? {};
+        return ReportCardScreen(studentId: e['id'] ?? '', studentName: e['name'] ?? '');
+      }),
+      GoRoute(path: '/results', builder: (c, s) => const ResultsScreen()),
     ],
   );
 });

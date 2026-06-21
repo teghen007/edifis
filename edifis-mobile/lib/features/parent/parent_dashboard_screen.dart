@@ -8,6 +8,7 @@ import '../../core/services/dashboard_api.dart';
 import '../../core/services/parent_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
+import '../../shared/widgets/glossy_button.dart';
 
 class ParentDashboardScreen extends ConsumerStatefulWidget {
   const ParentDashboardScreen({super.key});
@@ -136,9 +137,16 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                           Expanded(child: _summaryTile(LucideIcons.wallet,
                             '${_formatBal(bal)} XAF', 'Balance')),
                           const SizedBox(width: 14),
-                          const Expanded(child: GlassCard(child: SizedBox(height: 88))),
+                          const Expanded(child: SizedBox.shrink()),
                         ]),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
+                        GlossyButton(
+                          label: 'View Report Card',
+                          icon: Icons.article,
+                          onTap: () => context.push('/report-card',
+                            extra: {'id': _selectedId, 'name': selected['name'] ?? ''}),
+                        ),
+                        const SizedBox(height: 8),
                         if (r['marks'] is List && (r['marks'] as List).isNotEmpty)
                           ...((r['marks'] as List).take(8).map((m) => _markRow(m))),
                       ]);
