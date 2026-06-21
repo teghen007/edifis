@@ -18,7 +18,7 @@ class SubjectResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['school_admin', 'principal']);
+        return auth()->user()?->hasAnyRoleName(['school_admin', 'principal']);
     }
 
     public static function form(Form $form): Form

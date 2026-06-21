@@ -21,7 +21,7 @@ class StaffUserResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['school_admin', 'principal']);
+        return auth()->user()?->hasAnyRoleName(['school_admin', 'principal']);
     }
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder

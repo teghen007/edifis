@@ -23,7 +23,7 @@ class IssuanceResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('bursar');
+        return auth()->user()?->hasAnyRoleName(['bursar']);
     }
 
     public static function form(Form $form): Form

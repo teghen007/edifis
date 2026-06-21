@@ -23,7 +23,7 @@ class TeacherAssignmentResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['school_admin', 'principal']);
+        return auth()->user()?->hasAnyRoleName(['school_admin', 'principal']);
     }
 
     public static function form(Form $form): Form
@@ -32,7 +32,7 @@ class TeacherAssignmentResource extends Resource
         return $form->schema([
             Forms\Components\Select::make('teacher_id')
                 ->label('Teacher')
-                ->options(User::role($staffRoles)->pluck('name', 'id'))
+                ->options(User::whereHas('roles', fn ($q) => $q->whereIn('name', $staffRoles))->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
             Forms\Components\Select::make('subject_id')

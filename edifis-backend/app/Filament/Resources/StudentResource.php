@@ -20,7 +20,7 @@ class StudentResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['secretary', 'bursar', 'principal', 'school_admin']);
+        return auth()->user()?->hasAnyRoleName(['secretary', 'bursar', 'principal', 'school_admin']);
     }
 
     public static function form(Form $form): Form

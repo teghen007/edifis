@@ -17,7 +17,7 @@ class FeeResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['bursar', 'principal']);
+        return auth()->user()?->hasAnyRoleName(['bursar', 'principal']);
     }
 
     public static function table(Table $table): Table

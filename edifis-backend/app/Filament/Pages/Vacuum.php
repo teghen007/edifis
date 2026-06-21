@@ -35,7 +35,7 @@ class Vacuum extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('principal') ?? false;
+        return auth()->user()?->hasAnyRoleName(['principal']) ?? false;
     }
 
     public function getTitle(): string
