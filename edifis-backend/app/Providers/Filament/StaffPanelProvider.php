@@ -42,6 +42,7 @@ class StaffPanelProvider extends PanelProvider
                 'warning' => Color::Amber,
                 'danger' => Color::Red,
             ])
+            ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -84,6 +85,15 @@ class StaffPanelProvider extends PanelProvider
               .fi-btn{font-weight:700!important;border-radius:11px!important}
               .fi-btn.fi-color-primary{background:linear-gradient(180deg,#2563EB,#1D4ED8)!important;box-shadow:0 10px 28px -8px rgba(37,99,235,.55)!important}
               .fi-btn.fi-color-primary:hover{transform:translateY(-2px);box-shadow:0 16px 36px -8px rgba(37,99,235,.65)!important}
+              .fi-simple-main, .fi-simple-main h1, .fi-simple-main h2,
+              .fi-simple-main label, .fi-simple-main .fi-fo-field-wrp-label,
+              .fi-simple-main .fi-checkbox-input-label, .fi-simple-main p, .fi-simple-main span{
+                color:#0F2350 !important;
+              }
+              .fi-simple-main .fi-input{ color:#0B1220 !important; background:#fff !important; }
+              .fi-simple-main .fi-input::placeholder{ color:#94a3b8 !important; }
+              .fi-simple-main a{ color:#2563EB !important; }
+              .fi-simple-main .fi-btn.fi-color-primary, .fi-simple-main .fi-btn.fi-color-primary *{ color:#fff !important; }
             </style>
             HTML,
         );
