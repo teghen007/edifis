@@ -68,6 +68,59 @@ class AuthController
         ]);
     }
 
+    public function assignments(Request $request): JsonResponse
+    {
+        $u = $request->user();
+
+        // Principals/VPs/admins are not stream-scoped — they see everything.
+        $unscoped = $u->hasAnyRoleName(['principal', 'vice_principal', 'school_admin']);
+
+        if ($unscoped) {
+            $streams = \Illuminate\Support\Facades\DB::table('streams')
+                ->select('id', 'name')->orderBy('name')->get();
+            $subjects = \Illuminate\Support\Facades\DB::table('subjects')
+                ->select('id', 'name', 'code')->orderBy('name')->get();
+            $pairs = [];
+            foreach ($streams as $s) {
+                foreach ($subjects as $sub) {
+                    $pairs[] = ['stream_id' => $s->id, 'subject_id' => $sub->id];
+                }
+            }
+
+            return response()->json([
+                'scoped' => false,
+                'streams' => $streams,
+                'subjects' => $subjects,
+                'pairs' => $pairs,
+            ]);
+        }
+
+        $rows = \Illuminate\Support\Facades\DB::table('teacher_assignments as ta')
+            ->join('streams', 'ta.stream_id', '=', 'streams.id')
+            ->join('subjects', 'ta.subject_id', '=', 'subjects.id')
+            ->where('ta.teacher_id', $u->id)
+            ->select('streams.id as stream_id', 'streams.name as stream_name',
+                'subjects.id as subject_id', 'subjects.name as subject_name', 'subjects.code as subject_code')
+            ->get();
+
+        $streams = $rows->unique('stream_id')->map(fn ($r) => [
+            'id' => $r->stream_id, 'name' => $r->stream_name,
+        ])->values();
+        $subjects = $rows->unique('subject_id')->map(fn ($r) => [
+            'id' => $r->subject_id, 'name' => $r->subject_name, 'code' => $r->subject_code,
+        ])->values();
+        $pairs = $rows->map(fn ($r) => [
+            'stream_id' => $r->stream_id, 'subject_id' => $r->subject_id,
+        ])->values();
+
+        return response()->json([
+            'scoped' => true,
+            'streams' => $streams,
+            'subjects' => $subjects,
+            'pairs' => $pairs,
+        ]);
+    }
+
     public function revocations(Request $request, RevocationList $list): JsonResponse
     {
         $since = $request->query('since')

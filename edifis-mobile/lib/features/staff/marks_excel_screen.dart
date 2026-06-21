@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../core/services/marks_api.dart';
 import '../../core/services/results_api.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/theme/app_colors.dart';
@@ -69,8 +68,7 @@ class _MarksExcelScreenState extends ConsumerState<MarksExcelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final streams = ref.watch(streamsProvider);
-    final subjects = ref.watch(subjectsProvider);
+    final assignments = ref.watch(myAssignmentsProvider);
     final terms = ref.watch(termsWithTestsProvider);
     final tests = terms.maybeWhen(data: (t) {
       final sel = t.where((e) => e.id == _termId);
@@ -81,17 +79,25 @@ class _MarksExcelScreenState extends ConsumerState<MarksExcelScreen> {
       appBar: AppBar(backgroundColor: AppColors.blue700, foregroundColor: Colors.white, title: const Text('Mark Sheet (Excel)')),
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: GlassCard(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          streams.when(loading: () => const LinearProgressIndicator(),
-            error: (_,__) => const SizedBox.shrink(),
-            data: (s) => DropdownButtonFormField<String>(value: _streamId, decoration: const InputDecoration(labelText: 'Stream'),
-              items: s.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-              onChanged: (v) => setState(() => _streamId = v))),
-          const SizedBox(height: 12),
-          subjects.when(loading: () => const LinearProgressIndicator(),
-            error: (_,__) => const SizedBox.shrink(),
-            data: (s) => DropdownButtonFormField<String>(value: _subjectId, decoration: const InputDecoration(labelText: 'Subject'),
-              items: s.map((e) => DropdownMenuItem(value: e.id, child: Text('${e.name} (${e.code})'))).toList(),
-              onChanged: (v) => setState(() => _subjectId = v))),
+          assignments.when(loading: () => const LinearProgressIndicator(),
+            error: (_,__) => const Text('Could not load your assignments.', style: TextStyle(color: AppColors.danger, fontSize: 13)),
+            data: (a) {
+              if (a.scoped && a.streams.isEmpty) {
+                return const Padding(padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text('You have no class/subject assignments yet. Ask the admin to assign you.',
+                    style: TextStyle(color: AppColors.muted, fontSize: 13)));
+              }
+              final subjectsForStream = a.subjectsFor(_streamId);
+              return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                DropdownButtonFormField<String>(initialValue: _streamId, decoration: const InputDecoration(labelText: 'Stream'),
+                  items: a.streams.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                  onChanged: (v) => setState(() { _streamId = v; _subjectId = null; })),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(initialValue: _subjectId, decoration: const InputDecoration(labelText: 'Subject'),
+                  items: subjectsForStream.map((e) => DropdownMenuItem(value: e.id, child: Text('${e.name} (${e.code})'))).toList(),
+                  onChanged: (v) => setState(() => _subjectId = v)),
+              ]);
+            }),
           const SizedBox(height: 12),
           terms.when(loading: () => const LinearProgressIndicator(),
             error: (_,__) => const SizedBox.shrink(),

@@ -32,6 +32,30 @@ class Mastersheet { final String streamName, termName; final List<String> subjec
   factory Mastersheet.fromJson(Map<String,dynamic> j)=>Mastersheet(j['stream_name']??'', j['term_name']??'',
     List<String>.from(j['subjects']??[]), ((j['students']??[]) as List).map((e)=>MsStudent.fromJson(e)).toList()); }
 
+class MyAssignments {
+  final bool scoped;
+  final List<StreamRow> streams;
+  final List<SubjectOpt> subjects;
+  final List<({String streamId, String subjectId})> pairs;
+  MyAssignments(this.scoped, this.streams, this.subjects, this.pairs);
+  factory MyAssignments.fromJson(Map<String,dynamic> j)=>MyAssignments(
+    j['scoped']==true,
+    ((j['streams']??[]) as List).map((e)=>StreamRow(e['id']??'', (e['name']??'').toString())).toList(),
+    ((j['subjects']??[]) as List).map((e)=>SubjectOpt(e['id']??'', e['name']??'', e['code']??'')).toList(),
+    ((j['pairs']??[]) as List).map((e)=>(streamId:(e['stream_id']??'').toString(), subjectId:(e['subject_id']??'').toString())).toList());
+  // subjects valid for a given stream (respects per-stream assignment)
+  List<SubjectOpt> subjectsFor(String? streamId) {
+    if (streamId==null) return subjects;
+    final ids = pairs.where((p)=>p.streamId==streamId).map((p)=>p.subjectId).toSet();
+    return subjects.where((s)=>ids.contains(s.id)).toList();
+  }
+}
+class SubjectOpt { final String id, name, code; SubjectOpt(this.id,this.name,this.code); }
+
+final myAssignmentsProvider = FutureProvider<MyAssignments>((ref) async {
+  final r = await ref.read(dioProvider).get('/me/assignments');
+  return MyAssignments.fromJson(r.data as Map<String,dynamic>); });
+
 final termsProvider = FutureProvider<List<TermRow>>((ref) async {
   final r = await ref.read(dioProvider).get('/terms');
   return ((r.data??[]) as List).map((e)=>TermRow.fromJson(e)).toList(); });

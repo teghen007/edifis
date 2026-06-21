@@ -70,8 +70,8 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
             onChanged: (v) => setState(() => _termId = v))),
         const SizedBox(height: 16),
         if (card == null) const CircularProgressIndicator()
-        else card!.when(loading: () => const CircularProgressIndicator(),
-          error: (e,_) => Text('Error loading report card', style: TextStyle(color: AppColors.danger)),
+        else card.when(loading: () => const CircularProgressIndicator(),
+          error: (e,_) => const Text('Error loading report card', style: TextStyle(color: AppColors.danger)),
           data: (r) => Column(children: [
             GlassCard(child: Column(children: [
               Text(r.termName, style: const TextStyle(fontSize: 14, color: AppColors.muted)),
