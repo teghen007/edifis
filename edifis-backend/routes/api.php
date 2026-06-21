@@ -61,6 +61,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/academics/marks', [MarksController::class, 'store'])
         ->middleware('role:subject_teacher|class_master|principal')
         ->name('academics.marks');
+    Route::get('/marks/template', [MarksController::class, 'template'])
+        ->middleware('role:subject_teacher|class_master|principal|vice_principal')
+        ->name('marks.template');
+    Route::post('/marks/upload', [MarksController::class, 'upload'])
+        ->middleware('role:subject_teacher|class_master|principal|vice_principal')
+        ->name('marks.upload');
 
     Route::post('/issuance/catalogue:import', [IssuanceController::class, 'import'])
         ->middleware('role:bursar')
