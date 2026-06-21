@@ -37,12 +37,14 @@ class MyAssignments {
   final List<StreamRow> streams;
   final List<SubjectOpt> subjects;
   final List<({String streamId, String subjectId})> pairs;
-  MyAssignments(this.scoped, this.streams, this.subjects, this.pairs);
+  final List<StreamRow> masteredStreams;
+  MyAssignments(this.scoped, this.streams, this.subjects, this.pairs, this.masteredStreams);
   factory MyAssignments.fromJson(Map<String,dynamic> j)=>MyAssignments(
     j['scoped']==true,
     ((j['streams']??[]) as List).map((e)=>StreamRow(e['id']??'', (e['name']??'').toString())).toList(),
     ((j['subjects']??[]) as List).map((e)=>SubjectOpt(e['id']??'', e['name']??'', e['code']??'')).toList(),
-    ((j['pairs']??[]) as List).map((e)=>(streamId:(e['stream_id']??'').toString(), subjectId:(e['subject_id']??'').toString())).toList());
+    ((j['pairs']??[]) as List).map((e)=>(streamId:(e['stream_id']??'').toString(), subjectId:(e['subject_id']??'').toString())).toList(),
+    ((j['mastered_streams']??[]) as List).map((e)=>StreamRow(e['id']??'', (e['name']??'').toString())).toList());
   // subjects valid for a given stream (respects per-stream assignment)
   List<SubjectOpt> subjectsFor(String? streamId) {
     if (streamId==null) return subjects;

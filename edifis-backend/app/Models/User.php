@@ -99,4 +99,21 @@ class User extends Authenticatable implements FilamentUser
             ->where('stream_id', $streamId)
             ->exists();
     }
+
+    public function mastersStream(string $streamId): bool
+    {
+        return \Illuminate\Support\Facades\DB::table('class_masters')
+            ->where('teacher_id', $this->id)
+            ->where('stream_id', $streamId)
+            ->exists();
+    }
+
+    /** @return array<int,string> */
+    public function masteredStreamIds(): array
+    {
+        return \Illuminate\Support\Facades\DB::table('class_masters')
+            ->where('teacher_id', $this->id)
+            ->pluck('stream_id')
+            ->all();
+    }
 }

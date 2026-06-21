@@ -63,6 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/academics/marks', [MarksController::class, 'store'])
         ->middleware('role:subject_teacher|class_master|principal')
         ->name('academics.marks');
+    Route::get('/enrollment/template', [\App\Http\Controllers\Api\EnrollmentController::class, 'template'])
+        ->middleware('role:class_master|principal|vice_principal|school_admin')
+        ->name('enrollment.template');
+    Route::post('/enrollment/upload', [\App\Http\Controllers\Api\EnrollmentController::class, 'upload'])
+        ->middleware('role:class_master|principal|vice_principal|school_admin')
+        ->name('enrollment.upload');
+
     Route::get('/marks/template', [MarksController::class, 'template'])
         ->middleware('role:subject_teacher|class_master|principal|vice_principal')
         ->name('marks.template');

@@ -41,6 +41,14 @@ class StaffHomeScreen extends ConsumerWidget {
       floatingActionButton: me.maybeWhen(
         data: (m) => ['subject_teacher','class_master','principal'].contains(m.role)
           ? Column(mainAxisSize: MainAxisSize.min, children: [
+              if (['class_master','principal'].contains(m.role)) ...[
+                FloatingActionButton.small(
+                  heroTag: 'enroll',
+                  backgroundColor: AppColors.blue400,
+                  onPressed: () => context.push('/enrollment-excel'),
+                  child: const Icon(LucideIcons.userCheck, color: Colors.white)),
+                const SizedBox(height: 8),
+              ],
               FloatingActionButton.small(
                 heroTag: 'excel',
                 backgroundColor: AppColors.blue500,

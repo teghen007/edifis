@@ -92,8 +92,16 @@ class AuthController
                 'streams' => $streams,
                 'subjects' => $subjects,
                 'pairs' => $pairs,
+                'mastered_streams' => $streams,
             ]);
         }
+
+        $masteredStreams = \Illuminate\Support\Facades\DB::table('class_masters as cm')
+            ->join('streams', 'cm.stream_id', '=', 'streams.id')
+            ->where('cm.teacher_id', $u->id)
+            ->select('streams.id', 'streams.name')
+            ->orderBy('streams.name')
+            ->get();
 
         $rows = \Illuminate\Support\Facades\DB::table('teacher_assignments as ta')
             ->join('streams', 'ta.stream_id', '=', 'streams.id')
@@ -118,6 +126,7 @@ class AuthController
             'streams' => $streams,
             'subjects' => $subjects,
             'pairs' => $pairs,
+            'mastered_streams' => $masteredStreams,
         ]);
     }
 
