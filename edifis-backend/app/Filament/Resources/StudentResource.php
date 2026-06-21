@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Domain\Students\Actions\EnrolStudent;
 use App\Domain\Students\Models\Student;
 use App\Filament\Resources\StudentResource\Pages;
+use App\Filament\Resources\StudentResource\RelationManagers;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,12 +15,12 @@ use Filament\Tables\Table;
 class StudentResource extends Resource
 {
     protected static ?string $model = Student::class;
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-    protected static ?string $navigationGroup = 'Academic';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationGroup = 'People';
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['secretary', 'bursar', 'principal']);
+        return auth()->user()?->hasAnyRole(['secretary', 'bursar', 'principal', 'school_admin']);
     }
 
     public static function form(Form $form): Form
@@ -69,6 +70,13 @@ class StudentResource extends Resource
                 Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\SubjectsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

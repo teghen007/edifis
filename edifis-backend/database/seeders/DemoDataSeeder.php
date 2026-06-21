@@ -142,6 +142,7 @@ class DemoDataSeeder extends Seeder
         $this->seedTimetable();
         $this->seedCalendarEvents();
         $this->seedParent();
+        $this->seedAdmin();
 
         $this->command->info('Demo data seeded successfully.');
     }
@@ -709,5 +710,26 @@ class DemoDataSeeder extends Seeder
             . ' streams, 3 terms, 6 tests, ' . $enrolCount
             . ' enrolments, ' . ($subCount > 0 ? "$subCount student subjects" : 'student subjects skipped')
             . ', ' . ($assignCount ?? 0) . ' teacher assignments, 1 class master.');
+    }
+
+    private function seedAdmin(): void
+    {
+        $exists = User::where('email', 'admin@pssnkwen.local')->exists();
+        if ($exists) {
+            $this->command->info('[admin] school_admin user already exists — skipped.');
+            return;
+        }
+
+        $admin = User::create([
+            'id' => (string) Uuid::uuid7(),
+            'name' => 'School Admin',
+            'email' => 'admin@pssnkwen.local',
+            'password' => Hash::make('secret'),
+            'active' => true,
+        ]);
+
+        $admin->assignRole('school_admin');
+
+        $this->command->info("[admin] school_admin user created (admin@pssnkwen.local / secret).");
     }
 }

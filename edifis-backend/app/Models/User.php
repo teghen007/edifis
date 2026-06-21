@@ -60,7 +60,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->active && $this->hasAnyRole([
             'principal', 'vice_principal', 'bursar', 'class_master',
-            'subject_teacher', 'discipline_master', 'secretary',
+            'subject_teacher', 'discipline_master', 'secretary', 'school_admin',
         ]);
     }
 

@@ -125,6 +125,23 @@ class RolesAndPermissionsSeeder extends Seeder
                 'onboarding.list',
                 'tenancy.manage',
             ],
+            'school_admin' => [
+                'vacuum.query',
+                'vacuum.command',
+                'promotion.override',
+                'timetable.manage',
+                'calendar.manage',
+                'academics.view.school',
+                'attendance.view.school',
+                'discipline.all',
+                'issuance.all',
+                'fees.all',
+                'students.register',
+                'signature.capture',
+                'documents.print',
+                'students.enrol',
+                'demographics.edit',
+            ],
         ];
     }
 }

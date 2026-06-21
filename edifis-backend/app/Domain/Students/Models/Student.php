@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Students\Models;
 
 use App\Domain\Academics\Models\SchoolClass;
+use App\Domain\Academics\Models\Stream;
+use App\Domain\Academics\Models\Subject;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Student extends Model
 {
@@ -45,5 +49,17 @@ class Student extends Model
     public function schoolClass(): BelongsTo
     {
         return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function streams(): BelongsToMany
+    {
+        return $this->belongsToMany(Stream::class, 'student_stream', 'student_id', 'stream_id')
+            ->withTimestamps();
+    }
+
+    public function subjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'student_subject', 'student_id', 'subject_id')
+            ->withTimestamps();
     }
 }
