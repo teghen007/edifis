@@ -6,10 +6,31 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\Ledger\Queries\BalanceQuery;
 use App\Domain\Students\Models\Student;
+use App\Exports\FeesSheetExport;
+use App\Imports\FeesSheetImport;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FeesController
 {
+    public function template(Request $request): BinaryFileResponse
+    {
+        $classId = $request->query('class_id');
+        return Excel::download(new FeesSheetExport($classId), 'fees-sheet.xlsx');
+    }
+
+    public function upload(Request $request): JsonResponse
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx']]);
+
+        $import = new FeesSheetImport;
+        Excel::import($import, $request->file('file'));
+
+        return response()->json($import->getResult());
+    }
+
     public function balance(string $studentId, BalanceQuery $query): JsonResponse
     {
         return response()->json($query->get($studentId));

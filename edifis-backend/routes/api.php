@@ -109,6 +109,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/fees/balances', [FeesController::class, 'balances'])
         ->middleware('role:bursar|principal|vice_principal')
         ->name('fees.balances');
+    Route::get('/fees/template', [FeesController::class, 'template'])
+        ->middleware('role:bursar|principal|vice_principal')
+        ->name('fees.template');
+    Route::post('/fees/upload', [FeesController::class, 'upload'])
+        ->middleware('role:bursar|principal|vice_principal')
+        ->name('fees.upload');
 
     Route::post('/timetable', [TimetableController::class, 'store'])
         ->middleware('role:vice_principal|principal')

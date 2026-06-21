@@ -32,6 +32,51 @@ class StaffHomeScreen extends ConsumerWidget {
     }
   }
 
+  Widget? _buildFab(BuildContext context, String role) {
+    final buttons = <Widget>[];
+
+    if (role == 'bursar' || role == 'principal') {
+      buttons.add(FloatingActionButton.small(
+        heroTag: 'fees',
+        backgroundColor: AppColors.blue300,
+        onPressed: () => context.push('/fees-excel'),
+        child: const Icon(LucideIcons.wallet, color: Colors.white)));
+    }
+    if (role == 'class_master' || role == 'principal') {
+      buttons.add(FloatingActionButton.small(
+        heroTag: 'enroll',
+        backgroundColor: AppColors.blue400,
+        onPressed: () => context.push('/enrollment-excel'),
+        child: const Icon(LucideIcons.userCheck, color: Colors.white)));
+    }
+    if (['subject_teacher', 'class_master', 'principal'].contains(role)) {
+      buttons.add(FloatingActionButton.small(
+        heroTag: 'excel',
+        backgroundColor: AppColors.blue500,
+        onPressed: () => context.push('/marks-excel'),
+        child: const Icon(LucideIcons.fileSpreadsheet, color: Colors.white)));
+      buttons.add(FloatingActionButton.extended(
+        heroTag: 'mark',
+        backgroundColor: AppColors.blue600,
+        icon: const Icon(LucideIcons.plus, color: Colors.white),
+        label: const Text('Record mark', style: TextStyle(color: Colors.white)),
+        onPressed: () => context.push('/submit-mark')));
+    }
+
+    if (buttons.isEmpty) return null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (var i = 0; i < buttons.length; i++) ...[
+          buttons[i],
+          if (i < buttons.length - 1) const SizedBox(height: 8),
+        ],
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final me = ref.watch(meProvider);
@@ -39,30 +84,7 @@ class StaffHomeScreen extends ConsumerWidget {
 
     return Scaffold(
       floatingActionButton: me.maybeWhen(
-        data: (m) => ['subject_teacher','class_master','principal'].contains(m.role)
-          ? Column(mainAxisSize: MainAxisSize.min, children: [
-              if (['class_master','principal'].contains(m.role)) ...[
-                FloatingActionButton.small(
-                  heroTag: 'enroll',
-                  backgroundColor: AppColors.blue400,
-                  onPressed: () => context.push('/enrollment-excel'),
-                  child: const Icon(LucideIcons.userCheck, color: Colors.white)),
-                const SizedBox(height: 8),
-              ],
-              FloatingActionButton.small(
-                heroTag: 'excel',
-                backgroundColor: AppColors.blue500,
-                onPressed: () => context.push('/marks-excel'),
-                child: const Icon(LucideIcons.fileSpreadsheet, color: Colors.white)),
-              const SizedBox(height: 8),
-              FloatingActionButton.extended(
-                heroTag: 'mark',
-                backgroundColor: AppColors.blue600,
-                icon: const Icon(LucideIcons.plus, color: Colors.white),
-                label: const Text('Record mark', style: TextStyle(color: Colors.white)),
-                onPressed: () => context.push('/submit-mark')),
-            ])
-          : null,
+        data: (m) => _buildFab(context, m.role),
         orElse: () => null),
       body: RefreshIndicator(
         onRefresh: () async {
