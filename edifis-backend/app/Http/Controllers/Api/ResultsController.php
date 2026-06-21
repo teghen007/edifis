@@ -1,0 +1,126 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api;
+
+use App\Domain\Results\Actions\ComputeResults;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class ResultsController
+{
+    public function compute(Request $request, ComputeResults $compute): JsonResponse
+    {
+        $validated = $request->validate([
+            'stream_id' => ['required', 'uuid'],
+            'term_id' => ['required', 'uuid'],
+        ]);
+
+        $result = $compute->handle($validated['stream_id'], $validated['term_id']);
+
+        return response()->json($result);
+    }
+
+    public function reportCard(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $studentId = $request->query('student_id');
+        $termId = $request->query('term_id');
+
+        abort_unless($studentId && $termId, 400, 'Missing student_id or term_id');
+
+        if ($user->hasRole('parent')) {
+            abort_unless($user->ownsStudent($studentId), 403);
+        }
+
+        $termResult = DB::table('term_results')
+            ->where('student_id', $studentId)
+            ->where('term_id', $termId)
+            ->first();
+
+        if (!$termResult) {
+            return response()->json(['message' => 'No results found for this student/term.'], 404);
+        }
+
+        $student = DB::table('students')->where('id', $studentId)->first();
+        $stream = DB::table('streams')->where('id', $termResult->stream_id)->first();
+        $term = DB::table('terms')->where('id', $termId)->first();
+
+        $outOf = DB::table('term_results')
+            ->where('stream_id', $termResult->stream_id)
+            ->where('term_id', $termId)
+            ->count();
+
+        $subjects = DB::table('subject_results')
+            ->join('subjects', 'subject_results.subject_id', '=', 'subjects.id')
+            ->leftJoin('grade_rules', 'subject_results.grade', '=', 'grade_rules.grade')
+            ->where('subject_results.student_id', $studentId)
+            ->where('subject_results.term_id', $termId)
+            ->select('subjects.name as subject_name', 'subject_results.average', 'subject_results.grade', 'grade_rules.remark')
+            ->orderBy('subjects.name')
+            ->get();
+
+        return response()->json([
+            'student_name' => trim(($student->given_name ?? '') . ' ' . ($student->family_name ?? '')),
+            'stream_name' => $stream->name ?? '',
+            'term_name' => $term->name ?? '',
+            'overall_average' => $termResult->overall_average,
+            'grade' => $termResult->grade,
+            'position' => $termResult->position,
+            'out_of' => $outOf,
+            'subjects' => $subjects,
+        ]);
+    }
+
+    public function mastersheet(Request $request): JsonResponse
+    {
+        $streamId = $request->query('stream_id');
+        $termId = $request->query('term_id');
+
+        abort_unless($streamId && $termId, 400, 'Missing stream_id or term_id');
+
+        $stream = DB::table('streams')->where('id', $streamId)->first();
+        $term = DB::table('terms')->where('id', $termId)->first();
+
+        $subjectList = DB::table('subject_results')
+            ->join('subjects', 'subject_results.subject_id', '=', 'subjects.id')
+            ->where('subject_results.stream_id', $streamId)
+            ->where('subject_results.term_id', $termId)
+            ->select('subjects.id', 'subjects.name')
+            ->distinct()
+            ->orderBy('subjects.name')
+            ->get();
+
+        $students = DB::table('term_results')
+            ->join('students', 'term_results.student_id', '=', 'students.id')
+            ->where('term_results.stream_id', $streamId)
+            ->where('term_results.term_id', $termId)
+            ->select('students.id as student_id', 'students.given_name', 'students.family_name', 'term_results.*')
+            ->orderBy('term_results.position')
+            ->get()
+            ->map(function ($s) use ($termId) {
+                $subjectAvgs = DB::table('subject_results')
+                    ->join('subjects', 'subject_results.subject_id', '=', 'subjects.id')
+                    ->where('subject_results.student_id', $s->student_id)
+                    ->where('subject_results.term_id', $termId)
+                    ->pluck('subject_results.average', 'subjects.name');
+
+                return [
+                    'name' => trim($s->given_name . ' ' . $s->family_name),
+                    'marks' => $subjectAvgs,
+                    'overall_average' => $s->overall_average,
+                    'grade' => $s->grade,
+                    'position' => $s->position,
+                ];
+            });
+
+        return response()->json([
+            'stream_name' => $stream->name ?? '',
+            'term_name' => $term->name ?? '',
+            'subjects' => $subjectList->pluck('name'),
+            'students' => $students,
+        ]);
+    }
+}

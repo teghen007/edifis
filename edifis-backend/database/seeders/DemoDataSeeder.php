@@ -145,6 +145,7 @@ class DemoDataSeeder extends Seeder
         $this->seedCalendarEvents();
         $this->seedParent();
         $this->seedAdmin();
+        $this->seedGradeRules();
 
         $this->command->info('Demo data seeded successfully.');
     }
@@ -210,7 +211,32 @@ class DemoDataSeeder extends Seeder
 
     private function seedMarks(): void
     {
-        $existing = Mark::where('sequence', '2026-T1-Seq1')->count();
+        $oldSubjects = array_values(self::SUBJECT_IDS);
+        $realSubjects = Subject::orderBy('code')->get();
+        $oldClassIds = array_values(self::CLASS_IDS);
+        $realClasses = SchoolClass::where('active', true)->orderBy('level')->get();
+
+        if ($realSubjects->isNotEmpty() && $realClasses->isNotEmpty()) {
+            $backfill = 0;
+            foreach ($oldSubjects as $oi => $oldId) {
+                $realId = $realSubjects[$oi % count($realSubjects)]->id ?? null;
+                if ($realId && $oldId !== $realId) {
+                    $backfill += Mark::where('subject_id', $oldId)->update(['subject_id' => $realId]);
+                }
+            }
+            foreach ($oldClassIds as $oi => $oldId) {
+                $realId = $realClasses[$oi % count($realClasses)]->id ?? null;
+                if ($realId && $oldId !== $realId) {
+                    $backfill += Mark::where('class_id', $oldId)->update(['class_id' => $realId]);
+                }
+            }
+            $backfill += Mark::where('sequence', '2026-T1-Seq1')->update(['sequence' => 'Sequence 1']);
+            if ($backfill > 0) {
+                $this->command->info("[marks] {$backfill} rows backfilled to real IDs + test names.");
+            }
+        }
+
+        $existing = Mark::where('sequence', 'Sequence 1')->count();
         if ($existing > count($this->studentIds)) {
             $this->command->info('[marks] already seeded — skipped.');
             return;
@@ -219,16 +245,14 @@ class DemoDataSeeder extends Seeder
         $classIds = array_values(self::CLASS_IDS);
         $teacher = User::where('email', 'ngufor.calvin@pssnkwen.local')->first();
         $teacherId = $teacher?->id ?? '00000000-0000-0000-0000-000000000999';
-        $subjects = array_values(self::SUBJECT_IDS);
+        $subjects = Subject::orderBy('code')->take(2)->pluck('id')->all();
         $count = 0;
 
         foreach ($this->studentIds as $i => $studentId) {
             foreach ($subjects as $j => $subjectId) {
-                if ($j >= 2) continue;
-
                 $exists = Mark::where('student_id', $studentId)
                     ->where('subject_id', $subjectId)
-                    ->where('sequence', '2026-T1-Seq1')
+                    ->where('sequence', 'Sequence 1')
                     ->exists();
 
                 if (! $exists) {
@@ -239,7 +263,7 @@ class DemoDataSeeder extends Seeder
                         'student_id' => $studentId,
                         'subject_id' => $subjectId,
                         'class_id' => $classIds[$i % count($classIds)],
-                        'sequence' => '2026-T1-Seq1',
+                        'sequence' => 'Sequence 1',
                         'owner_teacher_id' => $teacherId,
                         'score' => $score,
                         'max_score' => 20.0,
@@ -733,5 +757,37 @@ class DemoDataSeeder extends Seeder
         $admin->assignRole('school_admin');
 
         $this->command->info("[admin] school_admin user created (admin@pssnkwen.local / secret).");
+    }
+
+    private function seedGradeRules(): void
+    {
+        if (DB::table('grade_rules')->count() > 0) {
+            $this->command->info('[grade_rules] already seeded — skipped.');
+            return;
+        }
+
+        $rules = [
+            ['grade' => 'A', 'point' => 4.0, 'min_score' => 16.0, 'max_score' => 20.0, 'remark' => 'Excellent'],
+            ['grade' => 'B', 'point' => 3.0, 'min_score' => 14.0, 'max_score' => 15.99, 'remark' => 'Very Good'],
+            ['grade' => 'C', 'point' => 2.0, 'min_score' => 12.0, 'max_score' => 13.99, 'remark' => 'Good'],
+            ['grade' => 'D', 'point' => 1.5, 'min_score' => 10.0, 'max_score' => 11.99, 'remark' => 'Average'],
+            ['grade' => 'E', 'point' => 1.0, 'min_score' => 8.0, 'max_score' => 9.99, 'remark' => 'Weak'],
+            ['grade' => 'F', 'point' => 0.0, 'min_score' => 0.0, 'max_score' => 7.99, 'remark' => 'Fail'],
+        ];
+
+        foreach ($rules as $rule) {
+            DB::table('grade_rules')->insert([
+                'id' => (string) Uuid::uuid7(),
+                'grade' => $rule['grade'],
+                'point' => $rule['point'],
+                'min_score' => $rule['min_score'],
+                'max_score' => $rule['max_score'],
+                'remark' => $rule['remark'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->command->info('[grade_rules] 6 Cameroon /20 bands seeded.');
     }
 }

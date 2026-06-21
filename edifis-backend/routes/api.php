@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ResultsController;
 use App\Http\Controllers\Api\AcademicController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
@@ -145,4 +146,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/onboarding/requests/{id}/approve', [OnboardingController::class, 'approve'])
         ->middleware('role:pea_admin')
         ->name('onboarding.approve');
+
+    Route::post('/results/compute', [ResultsController::class, 'compute'])
+        ->middleware('role:principal|vice_principal|school_admin')
+        ->name('results.compute');
+    Route::get('/results/report-card', [ResultsController::class, 'reportCard'])
+        ->name('results.report-card');
+    Route::get('/results/mastersheet', [ResultsController::class, 'mastersheet'])
+        ->name('results.mastersheet');
 });
