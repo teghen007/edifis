@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Domain\Academics\Models\Stream;
+use App\Domain\Academics\Models\Subject;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use App\Domain\Students\Models\Student;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
@@ -69,5 +72,26 @@ class User extends Authenticatable implements FilamentUser
     public function ownsStudent(string $studentId): bool
     {
         return $this->children()->whereKey($studentId)->exists();
+    }
+
+    public function assignedStreams(): BelongsToMany
+    {
+        return $this->belongsToMany(Stream::class, 'teacher_assignments', 'teacher_id', 'stream_id')
+            ->withTimestamps();
+    }
+
+    public function assignedSubjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'teacher_assignments', 'teacher_id', 'subject_id')
+            ->withTimestamps();
+    }
+
+    public function teachesSubjectInStream(string $subjectId, string $streamId): bool
+    {
+        return \Illuminate\Support\Facades\DB::table('teacher_assignments')
+            ->where('teacher_id', $this->id)
+            ->where('subject_id', $subjectId)
+            ->where('stream_id', $streamId)
+            ->exists();
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AcademicController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\HealthController;
@@ -54,6 +55,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('classes.index');
     Route::get('/subjects', [\App\Http\Controllers\Api\SubjectController::class, 'index'])
         ->name('subjects.index');
+    Route::get('/streams', [AcademicController::class, 'streams'])->name('streams.index');
+    Route::get('/terms', [AcademicController::class, 'terms'])->name('terms.index');
 
     Route::post('/academics/marks', [MarksController::class, 'store'])
         ->middleware('role:subject_teacher|class_master|principal')

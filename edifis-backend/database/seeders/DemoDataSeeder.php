@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domain\Academics\Models\AcademicYear;
 use App\Domain\Academics\Models\Mark;
 use App\Domain\Academics\Models\SchoolClass;
+use App\Domain\Academics\Models\Section;
+use App\Domain\Academics\Models\Stream;
 use App\Domain\Academics\Models\Subject;
+use App\Domain\Academics\Models\Term;
+use App\Domain\Academics\Models\Test;
 use App\Domain\Attendance\Models\AttendanceEvent;
 use App\Domain\Attendance\Models\AttendanceSession;
 use App\Domain\Issuance\Models\CatalogueItem;
@@ -132,6 +137,7 @@ class DemoDataSeeder extends Seeder
         $this->assignStudentClasses();
         $this->seedMarks();
         $this->seedAttendance();
+        $this->seedAcademicCore();
         $this->seedFees();
         $this->seedTimetable();
         $this->seedCalendarEvents();
@@ -538,5 +544,170 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->command->info("[parent] 1 demo parent (phone +237600000001, PIN 1234) linked to {$linked} students.");
+    }
+
+    private function seedAcademicCore(): void
+    {
+        if (AcademicYear::count() > 0) {
+            $this->command->info('[academic_core] already seeded — skipped.');
+            return;
+        }
+
+        $year = AcademicYear::create([
+            'id' => (string) Uuid::uuid7(),
+            'name' => '2025-2026',
+            'is_current' => true,
+            'starts_on' => '2025-09-01',
+            'ends_on' => '2026-06-15',
+        ]);
+
+        $section = Section::create([
+            'id' => (string) Uuid::uuid7(),
+            'name' => 'Secondary',
+        ]);
+
+        $classes = SchoolClass::where('active', true)->orderBy('level')->get();
+        $streamIds = [];
+        foreach ($classes as $class) {
+            $stream = Stream::create([
+                'id' => (string) Uuid::uuid7(),
+                'name' => $class->name,
+                'class_id' => $class->id,
+                'section_id' => $section->id,
+                'academic_year_id' => $year->id,
+                'active' => true,
+            ]);
+            $streamIds[] = $stream->id;
+        }
+
+        $termNames = ['Term 1', 'Term 2', 'Term 3'];
+        $termIds = [];
+        foreach ($termNames as $pos => $name) {
+            $term = Term::create([
+                'id' => (string) Uuid::uuid7(),
+                'name' => $name,
+                'academic_year_id' => $year->id,
+                'position' => $pos + 1,
+            ]);
+            $termIds[] = $term->id;
+
+            for ($seq = 1; $seq <= 2; $seq++) {
+                $testPos = ($pos * 2) + $seq;
+                Test::create([
+                    'id' => (string) Uuid::uuid7(),
+                    'name' => 'Sequence ' . $testPos,
+                    'term_id' => $term->id,
+                    'position' => $testPos,
+                    'default_max' => 20,
+                ]);
+            }
+        }
+
+        $subjects = Subject::all();
+        foreach ($streamIds as $streamId) {
+            foreach ($subjects as $subject) {
+                DB::table('subject_stream')->insert([
+                    'subject_id' => $subject->id,
+                    'stream_id' => $streamId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        $students = Student::where('active', true)->get();
+        $enrolCount = 0;
+        foreach ($students as $student) {
+            $matchingStream = Stream::where('class_id', $student->class_id)->first();
+            if ($matchingStream) {
+                $exists = DB::table('student_stream')
+                    ->where('student_id', $student->id)
+                    ->where('stream_id', $matchingStream->id)
+                    ->exists();
+                if (! $exists) {
+                    DB::table('student_stream')->insert([
+                        'student_id' => $student->id,
+                        'stream_id' => $matchingStream->id,
+                        'academic_year_id' => $year->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $enrolCount++;
+                }
+            }
+        }
+
+        $subCount = 0;
+        foreach ($students as $student) {
+            $stream = DB::table('student_stream')->where('student_id', $student->id)->first();
+            if (! $stream) continue;
+            $streamSubjects = DB::table('subject_stream')->where('stream_id', $stream->stream_id)->pluck('subject_id');
+            foreach ($streamSubjects as $subjectId) {
+                $exists = DB::table('student_subject')
+                    ->where('student_id', $student->id)
+                    ->where('subject_id', $subjectId)
+                    ->exists();
+                if (! $exists) {
+                    DB::table('student_subject')->insert([
+                        'student_id' => $student->id,
+                        'subject_id' => $subjectId,
+                        'stream_id' => $stream->stream_id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $subCount++;
+                }
+            }
+        }
+
+        $teacher = User::where('email', 'ngufor.calvin@pssnkwen.local')->first();
+        if ($teacher) {
+            $mathBioSubjects = Subject::whereIn('name', ['Mathematics', 'Biology'])->get();
+            $targetStreams = Stream::whereIn('name', ['Form 4', 'Form 5'])->get();
+            $assignCount = 0;
+            foreach ($targetStreams as $stream) {
+                foreach ($mathBioSubjects as $subject) {
+                    $exists = DB::table('teacher_assignments')
+                        ->where('teacher_id', $teacher->id)
+                        ->where('subject_id', $subject->id)
+                        ->where('stream_id', $stream->id)
+                        ->exists();
+                    if (! $exists) {
+                        DB::table('teacher_assignments')->insert([
+                            'teacher_id' => $teacher->id,
+                            'subject_id' => $subject->id,
+                            'stream_id' => $stream->id,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                        $assignCount++;
+                    }
+                }
+            }
+        }
+
+        $classMaster = User::where('email', 'songhi.kingsley@pssnkwen.local')->first();
+        if ($classMaster) {
+            $form3Stream = Stream::where('name', 'Form 3')->first();
+            if ($form3Stream) {
+                $exists = DB::table('class_masters')
+                    ->where('teacher_id', $classMaster->id)
+                    ->where('stream_id', $form3Stream->id)
+                    ->exists();
+                if (! $exists) {
+                    DB::table('class_masters')->insert([
+                        'teacher_id' => $classMaster->id,
+                        'stream_id' => $form3Stream->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+        }
+
+        $this->command->info('[academic_core] 1 year, 1 section, ' . count($streamIds)
+            . ' streams, 3 terms, 6 tests, ' . $enrolCount
+            . ' enrolments, ' . ($subCount > 0 ? "$subCount student subjects" : 'student subjects skipped')
+            . ', ' . ($assignCount ?? 0) . ' teacher assignments, 1 class master.');
     }
 }
