@@ -152,6 +152,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('results.compute');
     Route::get('/results/report-card', [ResultsController::class, 'reportCard'])
         ->name('results.report-card');
+    Route::get('/results/report-card/pdf', [ResultsController::class, 'reportCardPdf'])
+        ->name('results.report-card.pdf');
     Route::get('/results/mastersheet', [ResultsController::class, 'mastersheet'])
         ->name('results.mastersheet');
 });

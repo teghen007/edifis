@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Domain\Results\Actions\ComputeResults;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response;
 
 class ResultsController
 {
@@ -25,23 +27,61 @@ class ResultsController
 
     public function reportCard(Request $request): JsonResponse
     {
-        $user = $request->user();
         $studentId = $request->query('student_id');
         $termId = $request->query('term_id');
 
         abort_unless($studentId && $termId, 400, 'Missing student_id or term_id');
 
+        $this->authorizeStudentAccess($request, $studentId);
+
+        $data = $this->buildReportCard($studentId, $termId);
+
+        if ($data === null) {
+            return response()->json(['message' => 'No results found for this student/term.'], 404);
+        }
+
+        return response()->json($data);
+    }
+
+    public function reportCardPdf(Request $request): Response
+    {
+        $studentId = $request->query('student_id');
+        $termId = $request->query('term_id');
+
+        abort_unless($studentId && $termId, 400, 'Missing student_id or term_id');
+
+        $this->authorizeStudentAccess($request, $studentId);
+
+        $data = $this->buildReportCard($studentId, $termId);
+        abort_if($data === null, 404, 'No results found for this student/term.');
+
+        $data['school_name'] = config('app.name');
+        $data['generated_at'] = now()->format('d M Y, H:i');
+
+        $pdf = Pdf::loadView('results.report-card', $data)->setPaper('a4');
+
+        $fileName = 'report-card-' . str_replace(' ', '-', strtolower($data['student_name'])) . '.pdf';
+
+        return $pdf->download($fileName);
+    }
+
+    private function authorizeStudentAccess(Request $request, string $studentId): void
+    {
+        $user = $request->user();
         if ($user->hasRole('parent')) {
             abort_unless($user->ownsStudent($studentId), 403);
         }
+    }
 
+    private function buildReportCard(string $studentId, string $termId): ?array
+    {
         $termResult = DB::table('term_results')
             ->where('student_id', $studentId)
             ->where('term_id', $termId)
             ->first();
 
         if (!$termResult) {
-            return response()->json(['message' => 'No results found for this student/term.'], 404);
+            return null;
         }
 
         $student = DB::table('students')->where('id', $studentId)->first();
@@ -62,7 +102,7 @@ class ResultsController
             ->orderBy('subjects.name')
             ->get();
 
-        return response()->json([
+        return [
             'student_name' => trim(($student->given_name ?? '') . ' ' . ($student->family_name ?? '')),
             'stream_name' => $stream->name ?? '',
             'term_name' => $term->name ?? '',
@@ -71,7 +111,7 @@ class ResultsController
             'position' => $termResult->position,
             'out_of' => $outOf,
             'subjects' => $subjects,
-        ]);
+        ];
     }
 
     public function mastersheet(Request $request): JsonResponse

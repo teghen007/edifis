@@ -1,8 +1,14 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import '../../core/network/dio_client.dart';
 import '../../core/services/results_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
+import '../../shared/widgets/glossy_button.dart';
 
 class ReportCardScreen extends ConsumerStatefulWidget {
   final String studentId, studentName;
@@ -13,6 +19,31 @@ class ReportCardScreen extends ConsumerStatefulWidget {
 
 class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
   String? _termId;
+  bool _downloading = false;
+
+  Future<void> _downloadPdf() async {
+    if (_termId == null) return;
+    setState(() => _downloading = true);
+    try {
+      final dio = ref.read(dioProvider);
+      final res = await dio.get('/results/report-card/pdf',
+        queryParameters: {'student_id': widget.studentId, 'term_id': _termId},
+        options: Options(responseType: ResponseType.bytes));
+      final dir = await getTemporaryDirectory();
+      final f = File('${dir.path}/report-card.pdf');
+      await f.writeAsBytes(List<int>.from(res.data));
+      await OpenFilex.open(f.path);
+    } on DioException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
+          e.response?.statusCode == 404
+            ? 'No results computed for this term yet.'
+            : 'Could not download report card.')));
+      }
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
 
   Color _gradeColor(String g) {
     final c = g.toUpperCase();
@@ -52,6 +83,10 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
                 _stat('Grade', r.grade, _gradeColor(r.grade)),
                 _stat('Position', '${r.position}/${r.outOf}'),
               ]),
+              const SizedBox(height: 16),
+              _downloading
+                ? const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())
+                : GlossyButton(label: 'Download PDF', icon: Icons.picture_as_pdf, onTap: _downloadPdf),
             ])),
             const SizedBox(height: 16),
             ...r.subjects.map((s) => Padding(
