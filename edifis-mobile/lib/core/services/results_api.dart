@@ -3,6 +3,11 @@ import 'package:edifis/core/network/dio_client.dart';
 
 class TermRow { final String id, name; TermRow(this.id, this.name);
   factory TermRow.fromJson(Map<String,dynamic> j)=>TermRow(j['id']??'', j['name']??''); }
+class TestRow { final String id, name; TestRow(this.id, this.name);
+  factory TestRow.fromJson(Map<String,dynamic> j)=>TestRow(j['id']??'', j['name']??''); }
+class TermWithTests { final String id, name; final List<TestRow> tests; TermWithTests(this.id,this.name,this.tests);
+  factory TermWithTests.fromJson(Map<String,dynamic> j)=>TermWithTests(j['id']??'', j['name']??'',
+    ((j['tests']??[]) as List).map((e)=>TestRow.fromJson(e)).toList()); }
 class StreamRow { final String id, name; StreamRow(this.id, this.name);
   factory StreamRow.fromJson(Map<String,dynamic> j)=>StreamRow(j['id']??'', (j['class_name']??j['name']??'').toString()); }
 class SubjectResult { final String subject, average, grade, remark;
@@ -30,6 +35,9 @@ class Mastersheet { final String streamName, termName; final List<String> subjec
 final termsProvider = FutureProvider<List<TermRow>>((ref) async {
   final r = await ref.read(dioProvider).get('/terms');
   return ((r.data??[]) as List).map((e)=>TermRow.fromJson(e)).toList(); });
+final termsWithTestsProvider = FutureProvider<List<TermWithTests>>((ref) async {
+  final r = await ref.read(dioProvider).get('/terms');
+  return ((r.data??[]) as List).map((e)=>TermWithTests.fromJson(e)).toList(); });
 final streamsProvider = FutureProvider<List<StreamRow>>((ref) async {
   final r = await ref.read(dioProvider).get('/streams');
   return ((r.data??[]) as List).map((e)=>StreamRow.fromJson(e)).toList(); });

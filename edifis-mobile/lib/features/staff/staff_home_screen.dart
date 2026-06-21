@@ -40,11 +40,20 @@ class StaffHomeScreen extends ConsumerWidget {
     return Scaffold(
       floatingActionButton: me.maybeWhen(
         data: (m) => ['subject_teacher','class_master','principal'].contains(m.role)
-          ? FloatingActionButton.extended(
-              backgroundColor: AppColors.blue600,
-              icon: const Icon(LucideIcons.plus, color: Colors.white),
-              label: const Text('Record mark', style: TextStyle(color: Colors.white)),
-              onPressed: () => context.push('/submit-mark'))
+          ? Column(mainAxisSize: MainAxisSize.min, children: [
+              FloatingActionButton.small(
+                heroTag: 'excel',
+                backgroundColor: AppColors.blue500,
+                onPressed: () => context.push('/marks-excel'),
+                child: const Icon(LucideIcons.fileSpreadsheet, color: Colors.white)),
+              const SizedBox(height: 8),
+              FloatingActionButton.extended(
+                heroTag: 'mark',
+                backgroundColor: AppColors.blue600,
+                icon: const Icon(LucideIcons.plus, color: Colors.white),
+                label: const Text('Record mark', style: TextStyle(color: Colors.white)),
+                onPressed: () => context.push('/submit-mark')),
+            ])
           : null,
         orElse: () => null),
       body: RefreshIndicator(

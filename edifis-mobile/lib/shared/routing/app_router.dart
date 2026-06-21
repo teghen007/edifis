@@ -17,6 +17,7 @@ import '../../features/staff/take_attendance_screen.dart';
 import '../../features/staff/timetable_screen.dart';
 import '../../features/results/report_card_screen.dart';
 import '../../features/results/results_screen.dart';
+import '../../features/staff/marks_excel_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -57,6 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return ReportCardScreen(studentId: e['id'] ?? '', studentName: e['name'] ?? '');
       }),
       GoRoute(path: '/results', builder: (c, s) => const ResultsScreen()),
+      GoRoute(path: '/marks-excel', builder: (c, s) => const MarksExcelScreen()),
     ],
   );
 });
