@@ -131,6 +131,8 @@ class DemoDataSeeder extends Seeder
     {
         $this->command->info('=== DemoDataSeeder ===');
 
+        \DB::table('model_has_roles')->where('model_type', 'App\\\\Models\\\\User')->update(['model_type' => 'App\\Models\\User']);
+
         $this->seedClasses();
         $this->seedSubjects();
         $this->seedStudents();
