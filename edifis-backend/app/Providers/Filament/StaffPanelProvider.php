@@ -29,6 +29,7 @@ class StaffPanelProvider extends PanelProvider
             ->id('staff')
             ->path('staff')
             ->login()
+            ->authGuard('web')
             ->brandName('myEDIFIS')
             ->brandLogo(asset('brand/logo.png'))
             ->darkModeBrandLogo(asset('brand/logo-white.png'))
