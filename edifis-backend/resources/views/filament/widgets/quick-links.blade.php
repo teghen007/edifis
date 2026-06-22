@@ -1,7 +1,7 @@
 <x-filament-widgets::widget>
     <x-filament::section>
-        <x-slot name="heading">Quick access</x-slot>
-        <x-slot name="description">Jump straight to where you work most.</x-slot>
+        <x-slot name="heading">Welcome to {{ $this->getSchoolName() }}</x-slot>
+        <x-slot name="description">Quick access — jump straight to where you work most.</x-slot>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             @foreach ($this->getLinks() as $link)

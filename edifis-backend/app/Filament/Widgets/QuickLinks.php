@@ -17,7 +17,13 @@ class QuickLinks extends Widget
 {
     protected static string $view = 'filament.widgets.quick-links';
     protected static ?int $sort = -2;
+    protected static bool $isLazy = false;
     protected int|string|array $columnSpan = 'full';
+
+    public function getSchoolName(): string
+    {
+        return \App\Domain\School\Models\SchoolSetting::schoolName();
+    }
 
     /** @return array<int,array{label:string,icon:string,url:string}> */
     public function getLinks(): array

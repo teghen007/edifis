@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class StatsOverview extends BaseWidget
 {
     protected static ?int $sort = -3;
+    protected static bool $isLazy = false;
 
     protected function getStats(): array
     {

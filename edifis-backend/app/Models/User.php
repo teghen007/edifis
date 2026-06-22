@@ -66,7 +66,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function hasAnyRoleName(array $names): bool
     {
-        return $this->roles()->whereIn('name', $names)->exists();
+        // Use the eager-loadable relation (loaded once per request, then cached on
+        // the model) instead of a fresh query each call — Filament calls this for
+        // every resource on every page render to build the navigation.
+        return $this->roles->whereIn('name', $names)->isNotEmpty();
     }
 
     public function children()
