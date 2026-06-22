@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MarkResource\Pages;
 use App\Filament\Resources\MarkResource\RelationManagers;
-use App\Models\Mark;
+use App\Domain\Academics\Models\Mark;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;

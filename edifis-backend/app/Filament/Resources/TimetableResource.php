@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TimetableResource\Pages;
 use App\Filament\Resources\TimetableResource\RelationManagers;
-use App\Models\Timetable;
+use App\Domain\Timetable\Models\TimetableEntry as Timetable;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
