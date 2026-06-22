@@ -152,6 +152,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/parent/calendar', [ParentPortalController::class, 'calendar'])
         ->middleware('role:parent')
         ->name('parent.calendar');
+    Route::post('/parent/ask', [ParentPortalController::class, 'ask'])
+        ->middleware('role:parent')
+        ->name('parent.ask');
 
     // PEA Admin — school request management
     Route::get('/onboarding/requests', [OnboardingController::class, 'list'])

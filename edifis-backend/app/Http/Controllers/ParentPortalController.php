@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Domain\AI\Actions\ParentAssistant;
 use App\Domain\Ledger\Queries\BalanceQuery;
 use App\Domain\Academics\Models\Mark;
 use App\Domain\Attendance\Models\AttendanceEvent;
@@ -14,6 +15,21 @@ use Illuminate\Http\Request;
 
 class ParentPortalController
 {
+    public function ask(Request $request, ParentAssistant $assistant): JsonResponse
+    {
+        $validated = $request->validate([
+            'question' => ['required', 'string', 'max:500'],
+        ]);
+
+        try {
+            return response()->json($assistant->ask($request->user(), $validated['question']));
+        } catch (\Throwable $e) {
+            return response()->json([
+                'answer' => 'The assistant is unavailable right now. Please try again shortly.',
+            ]);
+        }
+    }
+
     public function children(Request $request): JsonResponse
     {
         return response()->json(

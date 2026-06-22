@@ -25,4 +25,12 @@ return [
         'test_access_token' => env('FCM_TEST_ACCESS_TOKEN'),
     ],
 
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'deepseek'),
+        'base_url' => env('AI_BASE_URL', 'https://api.deepseek.com'),
+        'api_key' => env('AI_API_KEY'),
+        'model' => env('AI_MODEL', 'deepseek-chat'),
+        'timeout' => (int) env('AI_TIMEOUT', 30),
+    ],
+
 ];
