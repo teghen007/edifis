@@ -42,6 +42,7 @@ Route::post('/monitoring/node-status', [MonitoringController::class, 'nodeStatus
 // Parent auth (cloud-only — checked at runtime via mode parameter)
 Route::post('/parent/login', [ParentAuthController::class, 'login'])->name('parent.login');
 Route::post('/parent/verify-otp', [ParentAuthController::class, 'verifyOtp'])->name('parent.verify-otp');
+Route::post('/parent/firebase-login', [ParentAuthController::class, 'firebaseLogin'])->name('parent.firebase-login');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');

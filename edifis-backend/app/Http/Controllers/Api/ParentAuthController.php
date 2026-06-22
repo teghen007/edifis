@@ -105,6 +105,48 @@ class ParentAuthController
         ]);
     }
 
+    /**
+     * Login via Firebase Phone Auth: the app verifies the phone by SMS with Firebase,
+     * then sends us the Firebase ID token. We verify it and match the phone to a parent.
+     */
+    public function firebaseLogin(Request $request, \App\Domain\Auth\Services\FirebaseTokenVerifier $verifier): JsonResponse
+    {
+        $validated = $request->validate([
+            'id_token' => ['required', 'string'],
+            'device_name' => ['nullable', 'string'],
+        ]);
+
+        $projectId = (string) config('services.fcm.project_id');
+        $payload = $verifier->verify($validated['id_token'], $projectId);
+
+        if (!$payload || empty($payload['phone_number'])) {
+            return response()->json(['code' => 'invalid_token', 'message' => 'Phone verification failed. Please try again.'], 401);
+        }
+
+        $user = User::where('phone', $payload['phone_number'])
+            ->whereHas('roles', fn ($q) => $q->where('name', 'parent'))
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'code' => 'no_account',
+                'message' => 'No parent account is registered for this phone number. Please contact the school office.',
+            ], 404);
+        }
+
+        if ($user->locked_until && $user->locked_until->isFuture()) {
+            return response()->json(['code' => 'account_locked', 'message' => 'Account is locked.'], 423);
+        }
+
+        $token = $user->createToken('parent-portal', ['parent'], now()->addDays(30));
+
+        return response()->json([
+            'token' => $token->plainTextToken,
+            'must_reset_pin' => (bool) $user->must_reset_credential,
+            'user_id' => $user->id,
+        ]);
+    }
+
     public function setPin(Request $request, SetParentPin $setPin): JsonResponse
     {
         $validated = $request->validate([
