@@ -59,10 +59,12 @@
     <table class="marks">
         <thead>
             <tr>
-                <th style="width:45%">Subject</th>
-                <th class="num" style="width:15%">Average</th>
-                <th class="num" style="width:12%">Grade</th>
-                <th style="width:28%">Remark</th>
+                <th style="width:34%">Subject</th>
+                <th class="num" style="width:12%">Avg /20</th>
+                <th class="num" style="width:8%">Coef</th>
+                <th class="num" style="width:12%">Total</th>
+                <th class="num" style="width:10%">Grade</th>
+                <th style="width:24%">Remark</th>
             </tr>
         </thead>
         <tbody>
@@ -70,6 +72,8 @@
             <tr>
                 <td>{{ $s->subject_name }}</td>
                 <td class="num">{{ $s->average }}</td>
+                <td class="num">{{ $s->coefficient }}</td>
+                <td class="num">{{ $s->weighted }}</td>
                 <td class="num"><span class="grade-badge">{{ $s->grade }}</span></td>
                 <td>{{ $s->remark ?? '' }}</td>
             </tr>

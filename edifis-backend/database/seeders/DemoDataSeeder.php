@@ -636,6 +636,7 @@ class DemoDataSeeder extends Seeder
                 DB::table('subject_stream')->insert([
                     'subject_id' => $subject->id,
                     'stream_id' => $streamId,
+                    'coefficient' => $this->coefficientFor($subject->name),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -789,5 +790,23 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->command->info('[grade_rules] 6 Cameroon /20 bands seeded.');
+    }
+
+    /** Typical Cameroon secondary subject coefficients (weight in the average). */
+    private function coefficientFor(string $subjectName): int
+    {
+        $n = strtolower($subjectName);
+        $map = [
+            'further' => 4, 'math' => 4, 'physics' => 4, 'chemistry' => 4, 'biology' => 4,
+            'english' => 3, 'french' => 3, 'literature' => 3, 'economics' => 3, 'computer' => 3,
+            'geography' => 2, 'history' => 2, 'commerce' => 2, 'accounting' => 3, 'religious' => 2,
+            'citizen' => 1, 'physical' => 1, 'art' => 1,
+        ];
+        foreach ($map as $kw => $coeff) {
+            if (str_contains($n, $kw)) {
+                return $coeff;
+            }
+        }
+        return 2;
     }
 }

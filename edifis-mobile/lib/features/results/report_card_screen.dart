@@ -102,6 +102,7 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
               child: GlassCard(padding: const EdgeInsets.all(12), child: Row(children: [
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(s.subject, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink)),
+                  Text('Coef ${s.coefficient}  ·  Total ${s.weighted}', style: const TextStyle(fontSize: 11.5, color: AppColors.muted)),
                   if (s.remark.isNotEmpty) Text(s.remark, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
                 ])),
                 Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

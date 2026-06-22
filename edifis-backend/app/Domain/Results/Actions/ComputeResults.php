@@ -27,6 +27,11 @@ class ComputeResults
             ->where('stream_id', $streamId)
             ->pluck('student_id');
 
+        // Cameroon report cards weight each subject by its coefficient.
+        $coefficients = DB::table('subject_stream')
+            ->where('stream_id', $streamId)
+            ->pluck('coefficient', 'subject_id');
+
         $subjectResultsCount = 0;
 
         foreach ($students as $studentId) {
@@ -84,7 +89,17 @@ class ComputeResults
                 continue;
             }
 
-            $overallAverage = round($subjResults->avg('average'), 2);
+            // Weighted average = Σ(subject_average × coefficient) / Σ(coefficient).
+            $weightedSum = 0.0;
+            $totalCoeff = 0;
+            foreach ($subjResults as $sr) {
+                $coeff = (int) ($coefficients[$sr->subject_id] ?? 1);
+                $weightedSum += $sr->average * $coeff;
+                $totalCoeff += $coeff;
+            }
+            $overallAverage = $totalCoeff > 0
+                ? round($weightedSum / $totalCoeff, 2)
+                : round($subjResults->avg('average'), 2);
             $totalPoints = $subjResults->sum('point');
             $subjectsCount = $subjResults->count();
 

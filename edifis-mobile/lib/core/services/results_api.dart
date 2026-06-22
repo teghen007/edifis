@@ -10,9 +10,9 @@ class TermWithTests { final String id, name; final List<TestRow> tests; TermWith
     ((j['tests']??[]) as List).map((e)=>TestRow.fromJson(e)).toList()); }
 class StreamRow { final String id, name; StreamRow(this.id, this.name);
   factory StreamRow.fromJson(Map<String,dynamic> j)=>StreamRow(j['id']??'', (j['class_name']??j['name']??'').toString()); }
-class SubjectResult { final String subject, average, grade, remark;
-  SubjectResult(this.subject,this.average,this.grade,this.remark);
-  factory SubjectResult.fromJson(Map<String,dynamic> j)=>SubjectResult(j['subject_name']??'', '${j['average']??''}', j['grade']??'', j['remark']??''); }
+class SubjectResult { final String subject, average, grade, remark, coefficient, weighted;
+  SubjectResult(this.subject,this.average,this.grade,this.remark,this.coefficient,this.weighted);
+  factory SubjectResult.fromJson(Map<String,dynamic> j)=>SubjectResult(j['subject_name']??'', '${j['average']??''}', j['grade']??'', j['remark']??'', '${j['coefficient']??1}', '${j['weighted']??''}'); }
 class ReportCard {
   final String studentName, streamName, termName, overallAverage, grade, aiRemark; final int position, outOf; final List<SubjectResult> subjects;
   ReportCard({required this.studentName,required this.streamName,required this.termName,required this.overallAverage,required this.grade,required this.position,required this.outOf,required this.subjects,this.aiRemark=''});
