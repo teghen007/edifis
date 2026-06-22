@@ -16,6 +16,7 @@ class LedgerEntry extends Model
         'student_id',
         'source_event_id',
         'amount',
+        'description',
         'posted_at',
         'synced_time',
     ];

@@ -64,6 +64,29 @@ class ParentPortalController
         ]);
     }
 
+    public function childFees(Request $request, string $studentId, BalanceQuery $balance): JsonResponse
+    {
+        abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');
+
+        $items = \App\Domain\Ledger\Models\LedgerEntry::where('student_id', $studentId)
+            ->orderByDesc('posted_at')
+            ->get()
+            ->map(fn ($e) => [
+                'label' => $e->description ?: ($e->amount >= 0 ? 'Charge' : 'Payment received'),
+                'amount' => (int) $e->amount,
+                'type' => $e->amount >= 0 ? 'charge' : 'payment',
+                'date' => optional($e->posted_at)->toDateString(),
+            ]);
+
+        $data = $balance->get($studentId);
+
+        return response()->json([
+            'balance' => $data['balance'],
+            'currency' => $data['currency'],
+            'items' => $items,
+        ]);
+    }
+
     public function childAttendance(Request $request, string $studentId): JsonResponse
     {
         abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');

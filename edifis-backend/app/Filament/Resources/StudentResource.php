@@ -34,6 +34,8 @@ class StudentResource extends Resource
                     Forms\Components\Select::make('sex')->options(['M' => 'Male', 'F' => 'Female']),
                     Forms\Components\DatePicker::make('date_of_birth'),
                     Forms\Components\TextInput::make('current_class_id')->label('Class ID')->required(),
+                    Forms\Components\Select::make('boarding_status')->label('Boarder / Day')
+                        ->options(['day' => 'Day student', 'boarding' => 'Boarder'])->default('day'),
                     Forms\Components\FileUpload::make('photo_ref')->disk('public'),
                 ]),
             Forms\Components\Section::make('Consent (required for minors)')

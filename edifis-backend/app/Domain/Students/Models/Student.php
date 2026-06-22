@@ -29,6 +29,7 @@ class Student extends Model
         'date_of_birth',
         'current_class_id',
         'class_id',
+        'boarding_status',
         'photo_ref',
         'enrolled_at',
         'demographics_revision',

@@ -123,6 +123,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/fees/upload', [FeesController::class, 'upload'])
         ->middleware('role:bursar|principal|vice_principal')
         ->name('fees.upload');
+    Route::post('/fees/bill', [FeesController::class, 'bill'])
+        ->middleware('role:bursar|principal')
+        ->name('fees.bill');
 
     Route::post('/timetable', [TimetableController::class, 'store'])
         ->middleware('role:vice_principal|principal')
@@ -151,6 +154,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/parent/children/{studentId}/balance', [ParentPortalController::class, 'childBalance'])
         ->middleware('role:parent')
         ->name('parent.child-balance');
+    Route::get('/parent/children/{studentId}/fees', [ParentPortalController::class, 'childFees'])
+        ->middleware('role:parent')
+        ->name('parent.child-fees');
     Route::get('/parent/children/{studentId}/results', [ParentPortalController::class, 'childResults'])
         ->middleware('role:parent')
         ->name('parent.child-results');
