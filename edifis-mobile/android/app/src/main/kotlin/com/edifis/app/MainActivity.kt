@@ -1,4 +1,4 @@
-package com.example.edifis
+package com.edifis.app
 
 import io.flutter.embedding.android.FlutterActivity
 
