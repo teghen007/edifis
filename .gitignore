@@ -46,3 +46,4 @@ edifis-infra/prod/landing/*.apk
 edifis-infra/prod/.env.prod
 
 edifis-brand/_homepage-localpreview.html
+secrets/
