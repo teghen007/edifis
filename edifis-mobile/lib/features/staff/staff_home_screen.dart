@@ -36,6 +36,13 @@ class StaffHomeScreen extends ConsumerWidget {
   Widget? _buildFab(BuildContext context, String role) {
     final buttons = <Widget>[];
 
+    if (role == 'principal' || role == 'vice_principal') {
+      buttons.add(FloatingActionButton.small(
+        heroTag: 'vacuum',
+        backgroundColor: AppColors.gold,
+        onPressed: () => context.push('/vacuum'),
+        child: const Icon(LucideIcons.sparkles, color: Colors.white)));
+    }
     if (role == 'bursar' || role == 'principal') {
       buttons.add(FloatingActionButton.small(
         heroTag: 'fees',

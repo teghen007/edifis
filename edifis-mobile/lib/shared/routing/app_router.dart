@@ -23,6 +23,7 @@ import '../../features/staff/conduct_screen.dart';
 import '../../features/parent/parent_ask_screen.dart';
 import '../../features/staff/enrollment_excel_screen.dart';
 import '../../features/staff/fees_excel_screen.dart';
+import '../../features/staff/vacuum_screen.dart';
 import '../../features/parent/fees_statement_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -70,6 +71,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/enrollment-excel', builder: (c, s) => const EnrollmentExcelScreen()),
       GoRoute(path: '/fees-excel', builder: (c, s) => const FeesExcelScreen()),
       GoRoute(path: '/conduct', builder: (c, s) => const ConductScreen()),
+      GoRoute(path: '/vacuum', builder: (c, s) => const VacuumScreen()),
       GoRoute(path: '/fees-statement', builder: (c, s) {
         final e = s.extra as Map<String, dynamic>? ?? {};
         return FeesStatementScreen(studentId: e['id'] ?? '', studentName: e['name'] ?? '');

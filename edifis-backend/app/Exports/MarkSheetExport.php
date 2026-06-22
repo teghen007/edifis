@@ -61,7 +61,7 @@ class MarkSheetExport implements FromCollection, WithEvents, WithStrictNullCompa
                 $sheet = $event->sheet->getDelegate();
 
                 $sheet->setCellValue('A1', 'School:');
-                $sheet->setCellValue('B1', 'PSS Nkwen');
+                $sheet->setCellValue('B1', \App\Domain\School\Models\SchoolSetting::schoolName());
                 $sheet->setCellValue('A2', 'Stream:');
                 $sheet->setCellValue('B2', ($stream?->name ?? '') . ' (' . ($stream?->schoolClass?->name ?? '') . ')');
                 $sheet->setCellValue('A3', 'Subject:');
