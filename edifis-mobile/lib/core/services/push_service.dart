@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:edifis/core/network/dio_client.dart';
 
@@ -41,7 +40,10 @@ class PushService {
 
       messaging.onTokenRefresh.listen((t) => _register(ref, t));
 
-      await _initLocalNotifications();
+      // Foreground messages: Android shows system notifications automatically
+      // when the app is backgrounded/closed. Foreground display can be added
+      // later if needed; for now we just keep the stream alive.
+      FirebaseMessaging.onMessage.listen((_) {});
     } catch (_) {
       // Silently fail
     }
@@ -61,31 +63,6 @@ class PushService {
       await ref.read(dioProvider).post('/fcm/register', data: {
         'token': token,
         'device_name': 'flutter-android',
-      });
-    } catch (_) {}
-  }
-
-  Future<void> _initLocalNotifications() async {
-    try {
-      const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-      await FlutterLocalNotificationsPlugin()
-          .initialize(const InitializationSettings(android: android));
-
-      FirebaseMessaging.onMessage.listen((msg) {
-        final notif = msg.notification;
-        if (notif == null) return;
-        FlutterLocalNotificationsPlugin().show(
-          notif.hashCode,
-          notif.title,
-          notif.body,
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'edifis_push',
-              'EDIFIS Notifications',
-              importance: Importance.high,
-            ),
-          ),
-        );
       });
     } catch (_) {}
   }
