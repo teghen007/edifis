@@ -1,5 +1,6 @@
 # EDIFIS backend image (Cloud Brain + Lite Local Node — same image, ADR-004)
-FROM php:8.3-cli-alpine
+# Served by PHP-FPM + Nginx (true concurrency) under supervisor; Horizon overrides CMD.
+FROM php:8.3-fpm-alpine
 
 RUN apk add --no-cache \
     linux-headers \
@@ -10,6 +11,7 @@ RUN apk add --no-cache \
     postgresql-dev \
     postgresql-client \
     supervisor \
+    nginx \
     brotli-dev \
     icu-dev \
     && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix mbstring bcmath intl opcache
@@ -52,6 +54,11 @@ RUN mkdir -p \
     && composer dump-autoload --optimize --no-dev \
     && (php artisan storage:link 2>/dev/null || true)
 
+# PHP-FPM + Nginx under supervisor (production HTTP serving).
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/supervisord.conf /etc/supervisord.conf
+RUN mkdir -p /tmp/nginx-client /tmp/nginx-proxy /tmp/nginx-fastcgi /run/nginx
+
 EXPOSE 8000
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
