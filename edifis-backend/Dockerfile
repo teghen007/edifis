@@ -24,8 +24,7 @@ RUN { \
         echo 'opcache.interned_strings_buffer=16'; \
         echo 'opcache.max_accelerated_files=20000'; \
         echo 'opcache.validate_timestamps=0'; \
-        echo 'opcache.jit=tracing'; \
-        echo 'opcache.jit_buffer_size=64M'; \
+        echo 'opcache.jit=disable'; \
     } > /usr/local/etc/php/conf.d/opcache.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -57,6 +56,7 @@ RUN mkdir -p \
 # PHP-FPM + Nginx under supervisor (production HTTP serving).
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
+COPY docker/php-fpm-www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN mkdir -p /tmp/nginx-client /tmp/nginx-proxy /tmp/nginx-fastcgi /run/nginx
 
 EXPOSE 8000
