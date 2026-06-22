@@ -37,4 +37,12 @@ class AuthApi {
     final res = await _dio.post('/parent/set-pin', data: {'pin': pin});
     return res.data;
   }
+
+  /// Exchange a verified Firebase ID token (Phone Auth) for an EDIFIS session.
+  Future<Map<String, dynamic>> parentFirebaseLogin(String idToken,
+      {String deviceName = 'EDIFIS App'}) async {
+    final res = await _dio.post('/parent/firebase-login',
+      data: {'id_token': idToken, 'device_name': deviceName});
+    return res.data as Map<String, dynamic>;
+  }
 }

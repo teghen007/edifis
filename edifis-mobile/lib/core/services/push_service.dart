@@ -12,9 +12,10 @@ class PushService {
     _initialised = true;
 
     try {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
+      // main() already initialises Firebase; only init here if it didn't.
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      }
     } catch (_) {
       // Firebase not configured yet — app still works
       _initialised = false;

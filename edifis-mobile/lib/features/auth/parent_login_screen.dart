@@ -91,7 +91,10 @@ class _ParentLoginScreenState extends ConsumerState<ParentLoginScreen> {
                       label: 'Sign in', icon: Icons.login, onTap: _signIn)),
                 ])).animate().fadeIn(duration: 400.ms, delay: 150.ms)
                     .slideY(begin: .1, end: 0, curve: Curves.easeOut),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            TextButton(onPressed: () => context.push('/parent-sms-login'),
+              child: const Text('No PIN / no email? Login with SMS code',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600))),
             TextButton(onPressed: () => context.go('/login'),
               child: const Text('Staff? Sign in here',
                 style: TextStyle(color: AppColors.blue100))),
