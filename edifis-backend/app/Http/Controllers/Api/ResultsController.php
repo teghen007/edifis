@@ -166,7 +166,7 @@ class ResultsController
                 'subject_results.grade',
                 'grade_rules.remark',
                 DB::raw('COALESCE(subject_stream.coefficient, 1) as coefficient'),
-                DB::raw('ROUND(subject_results.average * COALESCE(subject_stream.coefficient, 1), 2) as weighted')
+                DB::raw('ROUND((subject_results.average * COALESCE(subject_stream.coefficient, 1))::numeric, 2) as weighted')
             )
             ->orderBy('subjects.name')
             ->get();
