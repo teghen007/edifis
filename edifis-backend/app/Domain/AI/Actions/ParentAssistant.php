@@ -30,7 +30,7 @@ class ParentAssistant
             return ['answer' => 'There are no children linked to your account yet. Please contact the school office.'];
         }
 
-        $school = config('app.name');
+        $school = \App\Domain\School\Models\SchoolSetting::schoolName();
         $context = $this->buildContext($children, $school);
 
         $system = <<<PROMPT

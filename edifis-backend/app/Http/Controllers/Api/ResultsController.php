@@ -113,7 +113,7 @@ class ResultsController
         $data = $this->buildReportCard($studentId, $termId);
         abort_if($data === null, 404, 'No results found for this student/term.');
 
-        $data['school_name'] = config('app.name');
+        $data['school_name'] = \App\Domain\School\Models\SchoolSetting::schoolName();
         $data['generated_at'] = now()->format('d M Y, H:i');
 
         $pdf = Pdf::loadView('results.report-card', $data)->setPaper('a4');

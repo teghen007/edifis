@@ -46,6 +46,7 @@ Route::post('/parent/verify-otp', [ParentAuthController::class, 'verifyOtp'])->n
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
     Route::get('/me/assignments', [AuthController::class, 'assignments'])->name('auth.assignments');
+    Route::get('/school/profile', [\App\Http\Controllers\Api\SchoolController::class, 'profile'])->name('school.profile');
     Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
     Route::post('/students', [StudentController::class, 'store'])
         ->middleware('role:secretary|bursar')

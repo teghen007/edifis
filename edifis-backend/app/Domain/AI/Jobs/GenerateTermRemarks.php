@@ -36,7 +36,7 @@ class GenerateTermRemarks implements ShouldQueue
             return;
         }
 
-        $school = config('app.name');
+        $school = \App\Domain\School\Models\SchoolSetting::schoolName();
 
         $termResults = DB::table('term_results')
             ->where('stream_id', $this->streamId)

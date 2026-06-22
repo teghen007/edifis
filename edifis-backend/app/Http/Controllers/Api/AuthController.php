@@ -64,7 +64,7 @@ class AuthController
             'name'        => $u->name,
             'role'        => $u->getRoleNames()->first(),
             'email'       => $u->email,
-            'school_name' => config('app.name'),
+            'school_name' => \App\Domain\School\Models\SchoolSetting::schoolName(),
         ]);
     }
 

@@ -26,7 +26,7 @@ class PrincipalVacuum
     public function answer(string $question): array
     {
         $snapshot = $this->snapshot();
-        $school = config('app.name');
+        $school = \App\Domain\School\Models\SchoolSetting::schoolName();
 
         $system = <<<PROMPT
 You are VACUUM, the AI co-pilot for the principal of "{$school}", a school in Cameroon.
