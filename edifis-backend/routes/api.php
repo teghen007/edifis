@@ -26,6 +26,7 @@ Route::get('/health', HealthController::class)->name('health');
 
 Route::get('/', [PublicWebsiteController::class, 'landing'])->name('public.landing');
 Route::post('/onboarding/request', [PublicWebsiteController::class, 'submit'])->name('public.submit');
+Route::get('/schools', [PublicWebsiteController::class, 'schools'])->name('public.schools');
 
 Route::get('/tenancy/domain-allowed', [TenancyController::class, 'domainAllowed'])
     ->withoutMiddleware(\Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class)

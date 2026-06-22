@@ -54,8 +54,10 @@
     .band h2{font-size:clamp(1.5rem,4vw,2rem);position:relative;margin-bottom:8px}.band p{opacity:.92;position:relative;margin-bottom:22px}
     /* reveal */
     .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}.reveal.in{opacity:1;transform:none}
-    footer{background:var(--b950);color:#cbd5e1;padding:40px 0;text-align:center}
+    footer{background:var(--b950);color:#cbd5e1}
     footer .pw{display:inline-flex;align-items:center;gap:9px;font-size:.88rem;color:#93BBFD}footer .pw img{height:24px}
+    .fgrid{display:grid;gap:30px;grid-template-columns:1.6fr 1fr 1fr;padding:48px 22px 28px}
+    footer a:hover{color:#fff}
     .getapp{padding:74px 0;text-align:center}
     .getapp .apps{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin:24px 0 10px}
     .store{display:inline-flex;align-items:center;gap:12px;padding:.8rem 1.3rem;border-radius:14px;background:#0F2350;color:#fff;text-decoration:none;min-width:210px;box-shadow:0 14px 30px -14px rgba(15,35,80,.6);transition:transform .15s}
@@ -80,6 +82,7 @@
       .menu{position:fixed;inset:var(--nav-h) 0 auto 0;flex-direction:column;align-items:stretch;gap:0;background:rgba(15,35,80,.97);backdrop-filter:blur(14px);max-height:0;overflow:hidden;transition:max-height .3s ease;border-bottom:1px solid rgba(255,255,255,.1)}
       .menu a{padding:16px 22px;border-top:1px solid rgba(255,255,255,.08)}.menu a.pill,.menu a.ghost{margin:12px 22px;text-align:center;justify-content:center}
       #nz:checked~.menu{max-height:400px}.burger{display:block}
+      .fgrid{grid-template-columns:1fr;gap:24px;padding:38px 22px 22px}
     }
     @media(max-width:520px){
       .statsgrid{grid-template-columns:1fr 1fr;padding:18px;gap:12px}
@@ -192,9 +195,39 @@
     </div>
   </div></div></section>
 
-  <footer><div class="wrap">
-    <div class="pw"><img src="{{ asset('brand/logo-white.png') }}" alt="EDIFIS"> Powered by EDIFIS · GOD · KNOWLEDGE · GROWTH</div>
-  </div></footer>
+  <footer style="background:var(--b950);color:#cbd5e1;padding:0">
+    <div class="wrap fgrid">
+      <div style="min-width:0">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <img src="{{ asset('brand/logo-white.png') }}" alt="EDIFIS" style="height:26px">
+          <span style="color:#fff;font-weight:800;font-size:1.05rem">{{ $schoolName }}</span>
+        </div>
+        <p style="font-size:.9rem;color:#9fb3d6;max-width:34ch;line-height:1.6">Results, attendance, fees and school communication — together in one place, for staff and families.</p>
+        <p style="margin-top:14px;font-size:.72rem;letter-spacing:.25em;color:#6f86b3;font-weight:700">GOD · KNOWLEDGE · GROWTH</p>
+      </div>
+      <div>
+        <h4 style="color:#fff;font-weight:700;margin-bottom:14px;font-size:.95rem">Quick links</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:.9rem">
+          <li><a href="/parents" style="color:#bcd0f5">Parent login</a></li>
+          <li><a href="/staff" style="color:#bcd0f5">Staff login</a></li>
+          <li><a href="https://myedifis.com/app.apk" style="color:#bcd0f5">Download the app</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#fff;font-weight:700;margin-bottom:14px;font-size:.95rem">Contact</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;font-size:.9rem">
+          <li><a href="https://wa.me/237674072084" style="color:#bcd0f5">WhatsApp 674 072 084</a></li>
+          <li><a href="mailto:noreply.myedifis@gmail.com" style="color:#bcd0f5">noreply.myedifis@gmail.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.08)">
+      <div class="wrap" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:16px 22px;font-size:.8rem;color:#7e93bd">
+        <span>© {{ date('Y') }} {{ $schoolName }}</span>
+        <span class="pw" style="display:inline-flex;align-items:center;gap:8px;color:#93BBFD"><img src="{{ asset('brand/logo-white.png') }}" alt="EDIFIS" style="height:18px"> Powered by EDIFIS</span>
+      </div>
+    </div>
+  </footer>
 
   <script>
     const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});

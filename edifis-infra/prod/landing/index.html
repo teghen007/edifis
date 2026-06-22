@@ -97,11 +97,9 @@
     .chip:hover{filter:brightness(.96)}
 
     /* ---------- FOOTER ---------- */
-    footer{background:var(--b950);color:#cbd5e1;padding:42px 0}
-    .foot{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
-    .foot img{height:44px;width:auto}
-    .foot .m{font-size:.76rem;letter-spacing:.2em;color:#93BBFD}
-    .foot .c{font-size:.85rem;color:#94a3b8}
+    footer{background:var(--b950);color:#cbd5e1}
+    footer a:hover{color:#fff}
+    .ffoot{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:34px;padding:48px 22px 30px}
 
     /* ---------- RESPONSIVE ---------- */
     @media(max-width:860px){
@@ -116,7 +114,8 @@
         max-height:0;overflow:hidden;transition:max-height .28s ease}
       .menu a{padding:16px 22px;border-top:1px solid rgba(255,255,255,.07);font-size:1rem}
       .menu .pill{margin:14px 22px;text-align:center;justify-content:center}
-      #navtoggle:checked ~ .menu{max-height:320px}
+      #navtoggle:checked ~ .menu{max-height:380px}
+      .ffoot{grid-template-columns:1fr;gap:26px;padding:38px 22px 22px}
     }
     @media(max-width:560px){
       .dl{grid-template-columns:1fr;text-align:center;padding:34px 26px}
@@ -137,6 +136,7 @@
       </label>
       <div class="menu">
         <a href="#features">Features</a>
+        <a href="#schools">Schools</a>
         <a href="#download">Download</a>
         <a class="pill" href="#download">Get the app</a>
       </div>
@@ -180,6 +180,15 @@
       </div>
     </div>
   </div>
+
+  <!-- SCHOOLS ON EDIFIS -->
+  <section class="wrap" id="schools" style="padding:64px 0 8px;text-align:center">
+    <h2 style="color:var(--b800);font-size:1.7rem;margin-bottom:6px">Schools on EDIFIS</h2>
+    <p style="color:var(--muted);max-width:560px;margin:0 auto 28px">Trusted by schools across Cameroon.</p>
+    <div id="school-list" class="cards" style="text-align:left">
+      <p style="color:var(--muted);grid-column:1/-1">Loading schools…</p>
+    </div>
+  </section>
 
   <!-- DOWNLOAD -->
   <section class="wrap download" id="download">
@@ -226,12 +235,58 @@
 
   <!-- FOOTER -->
   <footer>
-    <div class="wrap" style="display:flex;flex-direction:column;align-items:center;gap:14px">
-      <img src="/assets/full-white.png" alt="myEDIFIS" style="height:44px" />
-      <span class="m" style="font-size:.76rem;letter-spacing:.2em;color:#93BBFD">GOD · KNOWLEDGE · GROWTH</span>
-      <span class="c" style="font-size:.85rem;color:#94a3b8">© <span id="y"></span> myEDIFIS · School management for Cameroon</span>
+    <div class="wrap ffoot">
+      <div style="max-width:34ch">
+        <img src="/assets/full-white.png" alt="myEDIFIS" style="height:40px;margin-bottom:12px" />
+        <p style="font-size:.9rem;color:#9fb3d6;line-height:1.6">AI-powered, bilingual school management for Cameroon — results, fees, attendance and parent engagement in one platform.</p>
+        <p style="margin-top:12px;font-size:.72rem;letter-spacing:.24em;color:#6f86b3;font-weight:700">GOD · KNOWLEDGE · GROWTH</p>
+      </div>
+      <div>
+        <h4 style="color:#fff;font-weight:700;margin-bottom:12px;font-size:.95rem">Platform</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:9px;font-size:.9rem">
+          <li><a href="#features" style="color:#bcd0f5">Features</a></li>
+          <li><a href="#schools" style="color:#bcd0f5">Our schools</a></li>
+          <li><a href="/app.apk" style="color:#bcd0f5">Download the app</a></li>
+          <li><a href="/staff/login" style="color:#bcd0f5">Staff login</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:#fff;font-weight:700;margin-bottom:12px;font-size:.95rem">Contact</h4>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:9px;font-size:.9rem">
+          <li><a href="https://wa.me/237674072084" style="color:#bcd0f5">WhatsApp 674 072 084</a></li>
+          <li><a href="mailto:noreply.myedifis@gmail.com" style="color:#bcd0f5">noreply.myedifis@gmail.com</a></li>
+        </ul>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,.08)">
+      <div class="wrap" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;padding:16px 22px;font-size:.82rem;color:#7e93bd">
+        <span>© <span id="y"></span> myEDIFIS · Cameroon</span>
+        <span>Built for Cameroon secondary schools 🇨🇲</span>
+      </div>
     </div>
   </footer>
-  <script>document.getElementById('y').textContent=new Date().getFullYear()</script>
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+    fetch('/api/schools').then(r => r.json()).then(list => {
+      const el = document.getElementById('school-list');
+      if (!Array.isArray(list) || !list.length) {
+        el.innerHTML = '<p style="color:#64748B;grid-column:1/-1;text-align:center">Be the first school on EDIFIS — <a href="https://wa.me/237674072084" style="color:#2563EB;font-weight:600">contact us</a>.</p>';
+        return;
+      }
+      el.innerHTML = list.map(s => `
+        <a class="card" href="https://${s.domain}" style="display:block">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="ico" style="margin:0;width:46px;height:46px;font-size:1.2rem">${(s.school_name||'?').charAt(0).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700;color:var(--b800)">${s.school_name||''}</div>
+              ${s.school_location ? `<div style="font-size:.8rem;color:var(--muted)">${s.school_location}</div>` : ''}
+            </div>
+          </div>
+          <div style="margin-top:12px;color:var(--b600);font-weight:600;font-size:.85rem">${s.domain} →</div>
+        </a>`).join('');
+    }).catch(() => {
+      document.getElementById('school-list').innerHTML = '';
+    });
+  </script>
 </body>
 </html>

@@ -17,7 +17,27 @@ class PublicWebsiteController
             return (new SchoolHomeController())->index();
         }
 
-        return view('public.landing');
+        $schools = \Illuminate\Support\Facades\DB::table('domains')
+            ->join('tenants', 'domains.tenant_id', '=', 'tenants.id')
+            ->where('domains.domain', 'like', '%.myedifis.com')
+            ->select('tenants.school_name', 'tenants.school_location', 'domains.domain')
+            ->orderBy('tenants.school_name')
+            ->get();
+
+        return view('public.landing', ['schools' => $schools]);
+    }
+
+    /** Public list of schools on EDIFIS (production subdomains), for the homepage. */
+    public function schools(): JsonResponse
+    {
+        $schools = \Illuminate\Support\Facades\DB::table('domains')
+            ->join('tenants', 'domains.tenant_id', '=', 'tenants.id')
+            ->where('domains.domain', 'like', '%.myedifis.com')
+            ->select('tenants.school_name', 'tenants.school_location', 'domains.domain')
+            ->orderBy('tenants.school_name')
+            ->get();
+
+        return response()->json($schools);
     }
 
     public function submit(Request $request): JsonResponse
