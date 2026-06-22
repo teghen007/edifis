@@ -12,7 +12,19 @@ RUN apk add --no-cache \
     supervisor \
     brotli-dev \
     icu-dev \
-    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix mbstring bcmath intl
+    && docker-php-ext-install pdo_pgsql pgsql zip gd pcntl posix mbstring bcmath intl opcache
+
+# OPcache — compile PHP once and keep it cached (huge speedup for Filament/Laravel).
+RUN { \
+        echo 'opcache.enable=1'; \
+        echo 'opcache.enable_cli=0'; \
+        echo 'opcache.memory_consumption=192'; \
+        echo 'opcache.interned_strings_buffer=16'; \
+        echo 'opcache.max_accelerated_files=20000'; \
+        echo 'opcache.validate_timestamps=0'; \
+        echo 'opcache.jit=tracing'; \
+        echo 'opcache.jit_buffer_size=64M'; \
+    } > /usr/local/etc/php/conf.d/opcache.ini
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

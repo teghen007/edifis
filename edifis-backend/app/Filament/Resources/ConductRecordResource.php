@@ -49,10 +49,10 @@ class ConductRecordResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('student'))
             ->columns([
                 Tables\Columns\TextColumn::make('student_id')->label('Student')
-                    ->formatStateUsing(fn ($state) => optional(Student::find($state))->given_name . ' ' . optional(Student::find($state))->family_name)
-                    ->searchable(),
+                    ->getStateUsing(fn ($record) => trim(($record->student->given_name ?? '') . ' ' . ($record->student->family_name ?? ''))),
                 Tables\Columns\TextColumn::make('conduct_grade')->badge(),
                 Tables\Columns\TextColumn::make('comment')->limit(40),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->sortable(),

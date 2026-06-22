@@ -21,4 +21,9 @@ class ConductRecord extends Model
     ];
 
     public const GRADES = ['Excellent', 'Good', 'Fair', 'Poor'];
+
+    public function student(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Domain\Students\Models\Student::class, 'student_id');
+    }
 }
