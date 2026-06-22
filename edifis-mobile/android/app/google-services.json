@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1079994292052",
+    "project_id": "edifis-4e3f1",
+    "storage_bucket": "edifis-4e3f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1079994292052:android:6348e79ca48f2cf5cc9ac1",
+        "android_client_info": {
+          "package_name": "com.edifis.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPnhchjKlr6w5st_l3qDFH5A3xFxgiAb8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

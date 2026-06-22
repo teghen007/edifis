@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:edifis/core/network/dio_client.dart';
+import 'package:edifis/firebase_options.dart';
 
 class PushService {
   bool _initialised = false;
@@ -11,14 +12,8 @@ class PushService {
     _initialised = true;
 
     try {
-      // TODO: replace with real firebase_options.dart once Firebase project exists
       await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: 'PLACEHOLDER',
-          appId: 'PLACEHOLDER',
-          messagingSenderId: 'PLACEHOLDER',
-          projectId: 'PLACEHOLDER',
-        ),
+        options: DefaultFirebaseOptions.currentPlatform,
       );
     } catch (_) {
       // Firebase not configured yet — app still works
