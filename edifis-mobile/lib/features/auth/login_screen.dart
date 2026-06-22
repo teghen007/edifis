@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/services/school_api.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../../shared/widgets/glossy_button.dart';
 
@@ -19,6 +20,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _pw = TextEditingController();
   bool _loading = false, _obscure = true;
   String? _error;
+
+  Widget _schoolHeader() {
+    final profile = ref.watch(schoolProfileProvider);
+    return profile.maybeWhen(data: (p) {
+      if (p.name.isEmpty) return const SizedBox.shrink();
+      return Column(children: [
+        if (p.logoUrl.isNotEmpty)
+          Image.network(p.logoUrl, height: 40, errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+        Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+        if (p.motto.isNotEmpty)
+          Text(p.motto, style: const TextStyle(color: AppColors.blue200, fontSize: 11)),
+      ]);
+    }, orElse: () => const SizedBox.shrink());
+  }
 
   @override
   void dispose() { _id.dispose(); _pw.dispose(); super.dispose(); }
@@ -51,7 +66,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.all(24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Image.asset('assets/brand/logo-white.png', height: 76).animate().fadeIn(duration: 500.ms),
-            const SizedBox(height: 24),
+            const SizedBox(height: 4),
+            _schoolHeader(),
+            const SizedBox(height: 20),
             GlassCard(child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 const Text('Staff sign-in', style: TextStyle(

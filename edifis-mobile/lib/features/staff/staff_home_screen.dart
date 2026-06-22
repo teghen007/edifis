@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/auth/auth_state.dart';
 import '../../core/services/dashboard_api.dart';
+import '../../core/services/school_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
 
@@ -114,6 +115,14 @@ class StaffHomeScreen extends ConsumerWidget {
                       data: (m) => '${m.role[0].toUpperCase()}${m.role.substring(1)} · ${m.schoolName}',
                       orElse: () => roleName),
                     style: const TextStyle(color: AppColors.blue100, fontSize: 13)),
+                  ref.watch(schoolProfileProvider).maybeWhen(data: (p) {
+                    if (p.name.isEmpty) return const SizedBox.shrink();
+                    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                      if (p.motto.isNotEmpty)
+                        Text(p.motto, style: const TextStyle(color: AppColors.blue100, fontSize: 10)),
+                    ]);
+                  }, orElse: () => const SizedBox.shrink()),
                 ]).animate().fadeIn(duration: 400.ms).slideX(begin: -.08, end: 0)),
                 IconButton(
                   icon: const Icon(LucideIcons.logOut, color: Colors.white),

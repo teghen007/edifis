@@ -9,6 +9,7 @@ import '../../core/services/parent_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../../shared/widgets/glossy_button.dart';
+import '../../core/services/school_api.dart';
 
 class ParentDashboardScreen extends ConsumerStatefulWidget {
   const ParentDashboardScreen({super.key});
@@ -69,6 +70,14 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                   Text(
                     me.maybeWhen(data: (m) => m.name, orElse: () => 'Parent'),
                     style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  ref.watch(schoolProfileProvider).maybeWhen(data: (p) {
+                    if (p.name.isEmpty) return const SizedBox.shrink();
+                    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                      if (p.motto.isNotEmpty)
+                        Text(p.motto, style: const TextStyle(color: AppColors.blue100, fontSize: 10)),
+                    ]);
+                  }, orElse: () => const SizedBox.shrink()),
                 ]).animate().fadeIn(duration: 400.ms).slideX(begin: -.08, end: 0)),
                 IconButton(
                   icon: const Icon(LucideIcons.logOut, color: Colors.white),
