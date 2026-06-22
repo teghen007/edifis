@@ -19,7 +19,7 @@ class SchoolSetting extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'name', 'school_type', 'motto', 'address', 'phone',
+        'name', 'school_type', 'language', 'motto', 'address', 'phone',
         'email', 'currency', 'principal_name', 'logo_url',
     ];
 
@@ -39,6 +39,18 @@ class SchoolSetting extends Model
     {
         $name = self::current()->name;
         return $name !== '' && $name !== null ? $name : (string) config('app.name');
+    }
+
+    /** 'en' or 'fr'. */
+    public static function language(): string
+    {
+        $lang = self::current()->language;
+        return in_array($lang, ['en', 'fr'], true) ? $lang : 'en';
+    }
+
+    public static function languageName(): string
+    {
+        return self::language() === 'fr' ? 'French' : 'English';
     }
 
     public static function flush(): void

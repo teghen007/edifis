@@ -31,6 +31,7 @@ class ParentAssistant
         }
 
         $school = \App\Domain\School\Models\SchoolSetting::schoolName();
+        $language = \App\Domain\School\Models\SchoolSetting::languageName();
         $context = $this->buildContext($children, $school);
 
         $system = <<<PROMPT
@@ -38,6 +39,7 @@ You are the EDIFIS parent assistant for "{$school}", a school in Cameroon.
 You help this parent understand their own children's school information.
 
 STRICT RULES:
+- Reply entirely in {$language}.
 - Use ONLY the data provided in the CONTEXT below. Never invent marks, fees, dates, or names.
 - The CONTEXT contains only THIS parent's children. If asked about any other student, another
   family, staff, or another school, politely say you can only help with their own children.

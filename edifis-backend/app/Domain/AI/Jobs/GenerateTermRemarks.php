@@ -37,6 +37,7 @@ class GenerateTermRemarks implements ShouldQueue
         }
 
         $school = \App\Domain\School\Models\SchoolSetting::schoolName();
+        $language = \App\Domain\School\Models\SchoolSetting::languageName();
 
         $termResults = DB::table('term_results')
             ->where('stream_id', $this->streamId)
@@ -65,6 +66,7 @@ class GenerateTermRemarks implements ShouldQueue
 
                 $system = <<<PROMPT
 You write brief, professional report-card remarks for a secondary school in Cameroon ("{$school}").
+Write the remark entirely in {$language}.
 Write ONE encouraging, specific remark (1-2 sentences, max 40 words) for the named student, based ONLY
 on the data given. Name the strongest area and the area to improve. No invented facts, no scores the
 data doesn't show. Address the student in the third person (e.g. "Goodness shows...").

@@ -189,15 +189,15 @@ class ResultsController
             return $s;
         });
 
+        $lang = \App\Domain\School\Models\SchoolSetting::language();
         $overallAvg = (float) $termResult->overall_average;
-        $mention = match (true) {
-            $overallAvg >= 18 => 'Excellent',
-            $overallAvg >= 16 => 'Very Good',
-            $overallAvg >= 14 => 'Good',
-            $overallAvg >= 12 => 'Fairly Good',
-            $overallAvg >= 10 => 'Average',
-            default => 'Weak',
-        };
+        $mentions = $lang === 'fr'
+            ? [18 => 'Excellent', 16 => 'Très Bien', 14 => 'Bien', 12 => 'Assez Bien', 10 => 'Passable', 0 => 'Faible']
+            : [18 => 'Excellent', 16 => 'Very Good', 14 => 'Good', 12 => 'Fairly Good', 10 => 'Average', 0 => 'Weak'];
+        $mention = 'Weak';
+        foreach ($mentions as $floor => $label) {
+            if ($overallAvg >= $floor) { $mention = $label; break; }
+        }
 
         $classAverage = DB::table('term_results')
             ->where('stream_id', $termResult->stream_id)
@@ -223,6 +223,7 @@ class ResultsController
             'ai_remark' => $termResult->ai_remark ?? null,
             'conduct_grade' => $conduct->conduct_grade ?? null,
             'conduct_comment' => $conduct->comment ?? null,
+            'language' => $lang,
             'subjects' => $subjects,
         ];
     }

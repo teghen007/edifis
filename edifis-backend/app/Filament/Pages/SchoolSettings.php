@@ -44,6 +44,9 @@ class SchoolSettings extends Page implements HasForms
                     TextInput::make('name')->label('School name')->required()->maxLength(255),
                     Select::make('school_type')->label('School type')->required()
                         ->options(['day' => 'Day', 'boarding' => 'Boarding', 'both' => 'Both (Day & Boarding)']),
+                    Select::make('language')->label('Language')->required()
+                        ->options(['en' => 'English', 'fr' => 'Français'])
+                        ->helperText('Language for report cards and the AI assistant.'),
                     TextInput::make('motto')->maxLength(255),
                     TextInput::make('principal_name')->label('Principal name')->maxLength(255),
                     TextInput::make('logo_url')->label('Logo URL')->url()->maxLength(500)

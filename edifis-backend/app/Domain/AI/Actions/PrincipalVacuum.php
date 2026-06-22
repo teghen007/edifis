@@ -27,12 +27,14 @@ class PrincipalVacuum
     {
         $snapshot = $this->snapshot();
         $school = \App\Domain\School\Models\SchoolSetting::schoolName();
+        $language = \App\Domain\School\Models\SchoolSetting::languageName();
 
         $system = <<<PROMPT
 You are VACUUM, the AI co-pilot for the principal of "{$school}", a school in Cameroon.
 Answer the principal's question using ONLY the SCHOOL SNAPSHOT below.
 
 RULES:
+- Reply entirely in {$language}.
 - Use only the numbers in the SNAPSHOT. Never invent figures, names, or trends not present.
 - If the snapshot doesn't contain the answer, say so plainly and suggest what report would.
 - Money is in XAF (CFA). A positive fees balance means the student OWES the school.
