@@ -20,6 +20,7 @@ class Subject extends Model
         'id',
         'name',
         'code',
+        'coefficient',
         'active',
     ];
 
@@ -27,6 +28,7 @@ class Subject extends Model
     {
         return [
             'active' => 'boolean',
+            'coefficient' => 'integer',
         ];
     }
 }

@@ -154,10 +154,6 @@ class ResultsController
         $subjects = DB::table('subject_results')
             ->join('subjects', 'subject_results.subject_id', '=', 'subjects.id')
             ->leftJoin('grade_rules', 'subject_results.grade', '=', 'grade_rules.grade')
-            ->leftJoin('subject_stream', function ($join) use ($termResult) {
-                $join->on('subject_stream.subject_id', '=', 'subject_results.subject_id')
-                    ->where('subject_stream.stream_id', '=', $termResult->stream_id);
-            })
             ->where('subject_results.student_id', $studentId)
             ->where('subject_results.term_id', $termId)
             ->select(
@@ -166,8 +162,8 @@ class ResultsController
                 'subject_results.average',
                 'subject_results.grade',
                 'grade_rules.remark',
-                DB::raw('COALESCE(subject_stream.coefficient, 1) as coefficient'),
-                DB::raw('ROUND((subject_results.average * COALESCE(subject_stream.coefficient, 1))::numeric, 2) as weighted')
+                DB::raw('COALESCE(subjects.coefficient, 1) as coefficient'),
+                DB::raw('ROUND((subject_results.average * COALESCE(subjects.coefficient, 1))::numeric, 2) as weighted')
             )
             ->orderBy('subjects.name')
             ->get();

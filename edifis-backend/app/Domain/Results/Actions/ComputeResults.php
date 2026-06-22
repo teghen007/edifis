@@ -27,10 +27,9 @@ class ComputeResults
             ->where('stream_id', $streamId)
             ->pluck('student_id');
 
-        // Cameroon report cards weight each subject by its coefficient.
-        $coefficients = DB::table('subject_stream')
-            ->where('stream_id', $streamId)
-            ->pluck('coefficient', 'subject_id');
+        // Cameroon report cards weight each subject by its coefficient
+        // (set by the admin on the subject).
+        $coefficients = DB::table('subjects')->pluck('coefficient', 'id');
 
         $subjectResultsCount = 0;
 

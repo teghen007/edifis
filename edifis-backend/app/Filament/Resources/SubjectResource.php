@@ -26,6 +26,11 @@ class SubjectResource extends Resource
         return $form->schema([
             Forms\Components\TextInput::make('name')->required()->maxLength(255),
             Forms\Components\TextInput::make('code')->required()->maxLength(10),
+            Forms\Components\TextInput::make('coefficient')
+                ->label('Coefficient')
+                ->helperText('Weight of this subject in the average (e.g. Maths 4, English 3).')
+                ->numeric()->minValue(1)->maxValue(20)
+                ->default(1)->required(),
         ]);
     }
 
@@ -35,6 +40,7 @@ class SubjectResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('code')->searchable(),
+                Tables\Columns\TextColumn::make('coefficient')->label('Coef')->badge()->sortable(),
             ])
             ->actions([Tables\Actions\EditAction::make()])
             ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);

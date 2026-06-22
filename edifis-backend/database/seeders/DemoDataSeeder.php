@@ -93,6 +93,7 @@ class DemoDataSeeder extends Seeder
                     'id' => (string) Uuid::uuid7(),
                     'name' => $s['name'],
                     'code' => $s['code'],
+                    'coefficient' => $this->coefficientFor($s['name']),
                 ]);
                 $count++;
             }
