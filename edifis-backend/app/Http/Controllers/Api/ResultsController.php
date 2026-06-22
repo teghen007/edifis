@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\AI\Jobs\GenerateTermRemarks;
 use App\Domain\Notifications\Channels\FcmChannel;
 use App\Domain\Notifications\Notifications\ResultsPublished;
 use App\Domain\Results\Actions\ComputeResults;
@@ -30,6 +31,9 @@ class ResultsController
         $result = $compute->handle($validated['stream_id'], $validated['term_id']);
 
         $this->notifyParents($validated['stream_id'], $validated['term_id']);
+
+        // Generate AI report-card remarks in the background (Horizon).
+        GenerateTermRemarks::dispatch($validated['stream_id'], $validated['term_id']);
 
         return response()->json($result);
     }
@@ -164,6 +168,7 @@ class ResultsController
             'grade' => $termResult->grade,
             'position' => $termResult->position,
             'out_of' => $outOf,
+            'ai_remark' => $termResult->ai_remark ?? null,
             'subjects' => $subjects,
         ];
     }

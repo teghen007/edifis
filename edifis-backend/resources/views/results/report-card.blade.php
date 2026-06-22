@@ -77,6 +77,15 @@
         </tbody>
     </table>
 
+    @if (!empty($ai_remark))
+    <table style="width:100%; margin-top:16px; border-collapse:collapse;">
+        <tr><td style="padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0;">
+            <span style="font-size:9px; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Class remark</span><br>
+            <span style="font-size:12px; color:#1e293b;">{{ $ai_remark }}</span>
+        </td></tr>
+    </table>
+    @endif
+
     <table class="signatures">
         <tr>
             <td><div class="line"></div>Class Master</td>
