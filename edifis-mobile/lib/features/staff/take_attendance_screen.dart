@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/services/attendance_api.dart';
 import '../../core/services/marks_api.dart';
+import '../../core/services/results_api.dart';
 import '../../core/services/students_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -61,23 +62,34 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
   }
 
   Widget _setup() {
-    final classes = ref.watch(classesProvider);
-    final subjects = ref.watch(subjectsProvider);
+    final assign = ref.watch(myAssignmentsProvider).valueOrNull;
+    final allClasses = ref.watch(classesProvider).valueOrNull ?? const [];
+    final allSubjects = ref.watch(subjectsProvider).valueOrNull ?? const [];
+    if (assign == null) return const Center(child: CircularProgressIndicator());
+
+    // Teachers only see the classes/subjects they're assigned to; principals see all.
+    final streamNames = assign.streams.map((s) => s.name).toSet();
+    final subjectIds = assign.subjects.map((s) => s.id).toSet();
+    final classes = assign.scoped ? allClasses.where((c) => streamNames.contains(c.name)).toList() : allClasses.toList();
+    final subjects = assign.scoped ? allSubjects.where((s) => subjectIds.contains(s.id)).toList() : allSubjects.toList();
+
+    if (assign.scoped && classes.isEmpty) {
+      return const Center(child: Padding(padding: EdgeInsets.all(24),
+        child: Text('You have no assigned classes yet. Ask the admin to assign you.',
+          textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted))));
+    }
+
     return SingleChildScrollView(padding: const EdgeInsets.all(16), child: GlassCard(child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        classes.when(loading: () => const LinearProgressIndicator(),
-          error: (e,_) => const Text('Error loading classes'),
-          data: (cs) => DropdownButtonFormField<String>(
-            initialValue: _classId, decoration: const InputDecoration(labelText: 'Class'),
-            items: cs.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-            onChanged: (v) => setState(() => _classId = v))),
+        DropdownButtonFormField<String>(
+          initialValue: _classId, decoration: const InputDecoration(labelText: 'Class'),
+          items: classes.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+          onChanged: (v) => setState(() => _classId = v)),
         const SizedBox(height: 12),
-        subjects.when(loading: () => const LinearProgressIndicator(),
-          error: (e,_) => const Text('Error loading subjects'),
-          data: (ss) => DropdownButtonFormField<String>(
-            initialValue: _subjectId, decoration: const InputDecoration(labelText: 'Subject'),
-            items: ss.map((s) => DropdownMenuItem(value: s.id, child: Text('${s.name} (${s.code})'))).toList(),
-            onChanged: (v) => setState(() => _subjectId = v))),
+        DropdownButtonFormField<String>(
+          initialValue: _subjectId, decoration: const InputDecoration(labelText: 'Subject'),
+          items: subjects.map((s) => DropdownMenuItem(value: s.id, child: Text('${s.name} (${s.code})'))).toList(),
+          onChanged: (v) => setState(() => _subjectId = v)),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(initialValue: _period, decoration: const InputDecoration(labelText: 'Period'),
           items: _periods.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),

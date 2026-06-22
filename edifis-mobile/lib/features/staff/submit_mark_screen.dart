@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/marks_api.dart';
+import '../../core/services/results_api.dart';
 import '../../core/services/students_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -54,8 +55,15 @@ class _SubmitMarkScreenState extends ConsumerState<SubmitMarkScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final classes = ref.watch(classesProvider);
-    final subjects = ref.watch(subjectsProvider);
+    // Teachers only see classes/subjects they're assigned to; principals see all.
+    final assign = ref.watch(myAssignmentsProvider).valueOrNull;
+    final scoped = assign?.scoped ?? false;
+    final streamNames = assign?.streams.map((s) => s.name).toSet() ?? <String>{};
+    final subjectIds = assign?.subjects.map((s) => s.id).toSet() ?? <String>{};
+    final classes = ref.watch(classesProvider)
+      .whenData((cs) => scoped ? cs.where((c) => streamNames.contains(c.name)).toList() : cs);
+    final subjects = ref.watch(subjectsProvider)
+      .whenData((ss) => scoped ? ss.where((s) => subjectIds.contains(s.id)).toList() : ss);
     final students = ref.watch(studentsProvider);
     final filtered = _classId != null
       ? students.maybeWhen(data: (all) => all.where((s) => s.classId == _classId).toList(), orElse: () => <StudentRow>[])
