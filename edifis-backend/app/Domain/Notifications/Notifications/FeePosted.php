@@ -34,6 +34,15 @@ class FeePosted extends Notification
         ];
     }
 
+    public function toFcm(object $notifiable): array
+    {
+        return [
+            'title' => 'Fee Posted — EDIFIS',
+            'body' => "{$this->studentName}: {$this->amount} XAF posted",
+            'data' => ['student_id' => $this->studentId, 'action' => 'fees'],
+        ];
+    }
+
     public function toWebPush(object $notifiable, mixed $notification): WebPushMessage
     {
         return (new WebPushMessage)

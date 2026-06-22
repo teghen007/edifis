@@ -170,4 +170,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('results.report-card.pdf');
     Route::get('/results/mastersheet', [ResultsController::class, 'mastersheet'])
         ->name('results.mastersheet');
+
+    Route::post('/fcm/register', [FcmTokenController::class, 'register'])
+        ->name('fcm.register');
 });

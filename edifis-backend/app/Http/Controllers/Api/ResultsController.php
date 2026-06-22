@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Notifications\Channels\FcmChannel;
+use App\Domain\Notifications\Notifications\ResultsPublished;
 use App\Domain\Results\Actions\ComputeResults;
+use App\Domain\Students\Models\Student;
+use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResultsController
 {
+    public function __construct(private readonly FcmChannel $fcm) {}
+
     public function compute(Request $request, ComputeResults $compute): JsonResponse
     {
         $validated = $request->validate([
@@ -22,7 +29,54 @@ class ResultsController
 
         $result = $compute->handle($validated['stream_id'], $validated['term_id']);
 
+        $this->notifyParents($validated['stream_id'], $validated['term_id']);
+
         return response()->json($result);
+    }
+
+    private function notifyParents(string $streamId, string $termId): void
+    {
+        try {
+            $term = DB::table('terms')->where('id', $termId)->first();
+            $termName = $term?->name ?? 'Term';
+
+            $rankedStudents = DB::table('term_results')
+                ->where('stream_id', $streamId)
+                ->where('term_id', $termId)
+                ->get();
+
+            foreach ($rankedStudents as $tr) {
+                $student = Student::find($tr->student_id);
+                if (!$student) {
+                    continue;
+                }
+
+                $studentName = trim($student->given_name . ' ' . $student->family_name);
+
+                $parentIds = DB::table('guardian_student')
+                    ->where('student_id', $tr->student_id)
+                    ->pluck('guardian_id');
+
+                foreach ($parentIds as $parentId) {
+                    $parent = User::find($parentId);
+                    if (!$parent) {
+                        continue;
+                    }
+                    $this->fcm->send($parent, new ResultsPublished(
+                        $tr->student_id,
+                        $studentName,
+                        $termName,
+                        (float) $tr->overall_average,
+                    ));
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to send results notifications', [
+                'stream_id' => $streamId,
+                'term_id' => $termId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function reportCard(Request $request): JsonResponse
