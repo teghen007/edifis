@@ -4,6 +4,7 @@ import '../config/school_config.dart';
 import '../services/auth_api.dart';
 import '../services/dashboard_api.dart';
 import '../services/parent_api.dart';
+import '../services/push_service.dart';
 import 'app_role.dart';
 
 class AuthData {
@@ -44,6 +45,7 @@ class AuthNotifier extends Notifier<AuthData?> {
     await _p.setString(_kExp, auth.expiresAt.toIso8601String());
     state = auth;
     _refreshUserData();
+    ref.read(pushServiceProvider).init(ref);
   }
 
   Future<void> logout() async { await _clearPrefs(); state = null; _refreshUserData(); }
@@ -59,6 +61,7 @@ class AuthNotifier extends Notifier<AuthData?> {
     if (deviceToken != null) await _p.setString('parent_device_$phone', deviceToken);
     state = auth;
     _refreshUserData();
+    ref.read(pushServiceProvider).init(ref);
   }
 
   String? parentDeviceToken(String phone) => _p.getString('parent_device_$phone');
