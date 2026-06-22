@@ -50,6 +50,12 @@
             <td class="label">Class Avg</td><td class="val">{{ $class_average ?? '—' }}</td>
             <td class="label">Mention</td><td class="val">{{ $mention }}</td>
         </tr>
+        @if (!empty($conduct_grade))
+        <tr>
+            <td class="label">Conduct</td>
+            <td class="val" colspan="3">{{ $conduct_grade }}@if(!empty($conduct_comment)) — {{ $conduct_comment }}@endif</td>
+        </tr>
+        @endif
     </table>
 
     <table class="summary">

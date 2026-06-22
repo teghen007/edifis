@@ -205,6 +205,11 @@ class ResultsController
             ->select(DB::raw('ROUND(AVG(overall_average)::numeric, 2) as class_average'))
             ->value('class_average');
 
+        $conduct = DB::table('conduct_records')
+            ->where('student_id', $studentId)
+            ->where('term_id', $termId)
+            ->first();
+
         return [
             'student_name' => trim(($student->given_name ?? '') . ' ' . ($student->family_name ?? '')),
             'stream_name' => $stream->name ?? '',
@@ -216,6 +221,8 @@ class ResultsController
             'position' => $termResult->position,
             'out_of' => $outOf,
             'ai_remark' => $termResult->ai_remark ?? null,
+            'conduct_grade' => $conduct->conduct_grade ?? null,
+            'conduct_comment' => $conduct->comment ?? null,
             'subjects' => $subjects,
         ];
     }

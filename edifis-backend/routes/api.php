@@ -47,6 +47,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
     Route::get('/me/assignments', [AuthController::class, 'assignments'])->name('auth.assignments');
     Route::get('/school/profile', [\App\Http\Controllers\Api\SchoolController::class, 'profile'])->name('school.profile');
+
+    Route::post('/conduct', [\App\Http\Controllers\Api\ConductController::class, 'store'])
+        ->middleware('role:discipline_master|principal|vice_principal')
+        ->name('conduct.store');
+    Route::get('/conduct', [\App\Http\Controllers\Api\ConductController::class, 'index'])
+        ->middleware('role:discipline_master|principal|vice_principal|class_master')
+        ->name('conduct.index');
     Route::get('/dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
     Route::post('/students', [StudentController::class, 'store'])
         ->middleware('role:secretary|bursar')
