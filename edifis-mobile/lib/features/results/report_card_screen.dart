@@ -88,6 +88,14 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
                 ? const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())
                 : GlossyButton(label: 'Download PDF', icon: Icons.picture_as_pdf, onTap: _downloadPdf),
             ])),
+            if (r.aiRemark.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              GlassCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Remark', style: TextStyle(fontSize: 11, color: AppColors.muted, fontWeight: FontWeight.w600, letterSpacing: .5)),
+                const SizedBox(height: 4),
+                Text(r.aiRemark, style: const TextStyle(fontSize: 13.5, color: AppColors.ink, height: 1.4)),
+              ])),
+            ],
             const SizedBox(height: 16),
             ...r.subjects.map((s) => Padding(
               padding: const EdgeInsets.only(bottom: 8),

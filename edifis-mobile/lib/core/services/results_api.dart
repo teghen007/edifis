@@ -14,11 +14,11 @@ class SubjectResult { final String subject, average, grade, remark;
   SubjectResult(this.subject,this.average,this.grade,this.remark);
   factory SubjectResult.fromJson(Map<String,dynamic> j)=>SubjectResult(j['subject_name']??'', '${j['average']??''}', j['grade']??'', j['remark']??''); }
 class ReportCard {
-  final String studentName, streamName, termName, overallAverage, grade; final int position, outOf; final List<SubjectResult> subjects;
-  ReportCard({required this.studentName,required this.streamName,required this.termName,required this.overallAverage,required this.grade,required this.position,required this.outOf,required this.subjects});
+  final String studentName, streamName, termName, overallAverage, grade, aiRemark; final int position, outOf; final List<SubjectResult> subjects;
+  ReportCard({required this.studentName,required this.streamName,required this.termName,required this.overallAverage,required this.grade,required this.position,required this.outOf,required this.subjects,this.aiRemark=''});
   factory ReportCard.fromJson(Map<String,dynamic> j)=>ReportCard(
     studentName:j['student_name']??'', streamName:j['stream_name']??'', termName:j['term_name']??'',
-    overallAverage:'${j['overall_average']??''}', grade:j['grade']??'',
+    overallAverage:'${j['overall_average']??''}', grade:j['grade']??'', aiRemark:j['ai_remark']??'',
     position:(j['position']??0) is int?j['position']??0:int.tryParse('${j['position']}')??0,
     outOf:(j['out_of']??0) is int?j['out_of']??0:int.tryParse('${j['out_of']}')??0,
     subjects:((j['subjects']??[]) as List).map((e)=>SubjectResult.fromJson(e)).toList());
