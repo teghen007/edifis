@@ -50,6 +50,13 @@ class StaffHomeScreen extends ConsumerWidget {
         onPressed: () => context.push('/enrollment-excel'),
         child: const Icon(LucideIcons.userCheck, color: Colors.white)));
     }
+    if (role == 'discipline_master' || role == 'principal') {
+      buttons.add(FloatingActionButton.small(
+        heroTag: 'conduct',
+        backgroundColor: AppColors.blue300,
+        onPressed: () => context.push('/conduct'),
+        child: const Icon(LucideIcons.shieldAlert, color: Colors.white)));
+    }
     if (['subject_teacher', 'class_master', 'principal'].contains(role)) {
       buttons.add(FloatingActionButton.small(
         heroTag: 'excel',

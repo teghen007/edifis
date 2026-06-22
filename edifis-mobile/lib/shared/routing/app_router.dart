@@ -21,6 +21,7 @@ import '../../features/staff/marks_excel_screen.dart';
 import '../../features/parent/parent_ask_screen.dart';
 import '../../features/staff/enrollment_excel_screen.dart';
 import '../../features/staff/fees_excel_screen.dart';
+import '../../features/staff/conduct_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -65,6 +66,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/parent-ask', builder: (c, s) => const ParentAskScreen()),
       GoRoute(path: '/enrollment-excel', builder: (c, s) => const EnrollmentExcelScreen()),
       GoRoute(path: '/fees-excel', builder: (c, s) => const FeesExcelScreen()),
+      GoRoute(path: '/conduct', builder: (c, s) => const ConductScreen()),
     ],
   );
 });

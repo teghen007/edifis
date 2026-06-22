@@ -91,6 +91,13 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
                 const SizedBox(height: 10),
                 _stat('Class avg', r.classAverage, AppColors.blue600),
               ],
+              if (r.conductGrade.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _stat('Conduct', r.conductGrade, AppColors.success),
+                if (r.conductComment.isNotEmpty)
+                  Padding(padding: const EdgeInsets.only(top: 4),
+                    child: Text(r.conductComment, style: const TextStyle(fontSize: 12, color: AppColors.muted), textAlign: TextAlign.center)),
+              ],
               const SizedBox(height: 16),
               _downloading
                 ? const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())

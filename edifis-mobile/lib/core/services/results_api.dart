@@ -14,12 +14,13 @@ class SubjectResult { final String subject, average, grade, remark, coefficient,
   SubjectResult(this.subject,this.average,this.grade,this.remark,this.coefficient,this.weighted,this.classAvg);
   factory SubjectResult.fromJson(Map<String,dynamic> j)=>SubjectResult(j['subject_name']??'', '${j['average']??''}', j['grade']??'', j['remark']??'', '${j['coefficient']??1}', '${j['weighted']??''}', '${j['class_avg']??''}'); }
 class ReportCard {
-  final String studentName, streamName, termName, overallAverage, grade, aiRemark, mention, classAverage; final int position, outOf; final List<SubjectResult> subjects;
-  ReportCard({required this.studentName,required this.streamName,required this.termName,required this.overallAverage,required this.grade,required this.position,required this.outOf,required this.subjects,this.aiRemark='',this.mention='',this.classAverage=''});
+  final String studentName, streamName, termName, overallAverage, grade, aiRemark, mention, classAverage, conductGrade, conductComment; final int position, outOf; final List<SubjectResult> subjects;
+  ReportCard({required this.studentName,required this.streamName,required this.termName,required this.overallAverage,required this.grade,required this.position,required this.outOf,required this.subjects,this.aiRemark='',this.mention='',this.classAverage='',this.conductGrade='',this.conductComment=''});
   factory ReportCard.fromJson(Map<String,dynamic> j)=>ReportCard(
     studentName:j['student_name']??'', streamName:j['stream_name']??'', termName:j['term_name']??'',
     overallAverage:'${j['overall_average']??''}', grade:j['grade']??'', aiRemark:j['ai_remark']??'',
     mention:j['mention']??'', classAverage:'${j['class_average']??''}',
+    conductGrade:j['conduct_grade']??'', conductComment:j['conduct_comment']??'',
     position:(j['position']??0) is int?j['position']??0:int.tryParse('${j['position']}')??0,
     outOf:(j['out_of']??0) is int?j['out_of']??0:int.tryParse('${j['out_of']}')??0,
     subjects:((j['subjects']??[]) as List).map((e)=>SubjectResult.fromJson(e)).toList());
