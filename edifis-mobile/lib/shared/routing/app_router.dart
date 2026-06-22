@@ -18,6 +18,7 @@ import '../../features/staff/timetable_screen.dart';
 import '../../features/results/report_card_screen.dart';
 import '../../features/results/results_screen.dart';
 import '../../features/staff/marks_excel_screen.dart';
+import '../../features/parent/parent_ask_screen.dart';
 import '../../features/staff/enrollment_excel_screen.dart';
 import '../../features/staff/fees_excel_screen.dart';
 
@@ -61,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }),
       GoRoute(path: '/results', builder: (c, s) => const ResultsScreen()),
       GoRoute(path: '/marks-excel', builder: (c, s) => const MarksExcelScreen()),
+      GoRoute(path: '/parent-ask', builder: (c, s) => const ParentAskScreen()),
       GoRoute(path: '/enrollment-excel', builder: (c, s) => const EnrollmentExcelScreen()),
       GoRoute(path: '/fees-excel', builder: (c, s) => const FeesExcelScreen()),
     ],

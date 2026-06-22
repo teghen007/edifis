@@ -141,6 +141,12 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                         ]),
                         const SizedBox(height: 14),
                         GlossyButton(
+                          label: 'Ask EDIFIS AI',
+                          icon: LucideIcons.sparkles,
+                          onTap: () => context.push('/parent-ask'),
+                        ),
+                        const SizedBox(height: 10),
+                        GlossyButton(
                           label: 'View Report Card',
                           icon: Icons.article,
                           onTap: () => context.push('/report-card',
