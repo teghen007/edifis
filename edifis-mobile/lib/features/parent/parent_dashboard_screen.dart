@@ -161,6 +161,13 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                           onTap: () => context.push('/report-card',
                             extra: {'id': _selectedId, 'name': selected['name'] ?? ''}),
                         ),
+                        const SizedBox(height: 10),
+                        GlossyButton(
+                          label: 'Fee Statement',
+                          icon: LucideIcons.receipt,
+                          onTap: () => context.push('/fees-statement',
+                            extra: {'id': _selectedId, 'name': selected['name'] ?? ''}),
+                        ),
                         const SizedBox(height: 8),
                         if (r['marks'] is List && (r['marks'] as List).isNotEmpty)
                           ...((r['marks'] as List).take(8).map((m) => _markRow(m))),

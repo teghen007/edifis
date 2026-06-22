@@ -14,6 +14,13 @@ class ParentApi {
   Future<dynamic> balance(String id) async =>
       (await _dio.get('/parent/children/$id/balance')).data;
   Future<List<dynamic>> calendar() async => (await _dio.get('/parent/calendar')).data as List;
+  Future<Map<String, dynamic>> fees(String id) async {
+    try {
+      return (await _dio.get('/parent/children/$id/fees')).data as Map<String, dynamic>;
+    } catch (_) {
+      return {'balance': 0, 'currency': 'XAF', 'items': <dynamic>[]};
+    }
+  }
 }
 
 final parentApiProvider = Provider<ParentApi>((ref) => ParentApi(ref.read(dioProvider)));
@@ -24,3 +31,5 @@ final childAttendanceProvider = FutureProvider.family<Map<String, dynamic>, Stri
     (ref, id) => ref.read(parentApiProvider).attendance(id));
 final childBalanceProvider = FutureProvider.family<dynamic, String>(
     (ref, id) => ref.read(parentApiProvider).balance(id));
+final childFeesProvider = FutureProvider.family<Map<String, dynamic>, String>(
+    (ref, id) => ref.read(parentApiProvider).fees(id));
