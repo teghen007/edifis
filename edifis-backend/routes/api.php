@@ -181,6 +181,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/results/compute', [ResultsController::class, 'compute'])
         ->middleware('role:principal|vice_principal|school_admin')
         ->name('results.compute');
+
+    Route::post('/promotions/deliberate', [\App\Http\Controllers\Api\PromotionController::class, 'deliberate'])
+        ->middleware('role:principal|vice_principal|school_admin')
+        ->name('promotions.deliberate');
+    Route::get('/promotions', [\App\Http\Controllers\Api\PromotionController::class, 'index'])
+        ->middleware('role:principal|vice_principal|school_admin|class_master')
+        ->name('promotions.index');
+    Route::post('/promotions/{decisionId}/override', [\App\Http\Controllers\Api\PromotionController::class, 'override'])
+        ->middleware('role:principal')
+        ->name('promotions.override');
     Route::get('/results/report-card', [ResultsController::class, 'reportCard'])
         ->name('results.report-card');
     Route::get('/results/report-card/pdf', [ResultsController::class, 'reportCardPdf'])
