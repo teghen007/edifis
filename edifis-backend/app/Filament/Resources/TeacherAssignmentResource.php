@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Domain\Academics\Models\Stream;
 use App\Domain\Academics\Models\Subject;
+use App\Domain\Academics\Models\TeacherAssignment;
 use App\Filament\Resources\TeacherAssignmentResource\Pages;
 use App\Models\User;
 use Filament\Forms;
@@ -11,11 +12,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
 
 class TeacherAssignmentResource extends Resource
 {
-    protected static ?string $model = null;
+    protected static ?string $model = TeacherAssignment::class;
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?string $navigationGroup = 'Assignments';
     protected static ?string $label = 'Teacher Assignment';
@@ -51,26 +51,13 @@ class TeacherAssignmentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(DB::table('teacher_assignments')
-                ->join('users', 'teacher_assignments.teacher_id', '=', 'users.id')
-                ->join('subjects', 'teacher_assignments.subject_id', '=', 'subjects.id')
-                ->join('streams', 'teacher_assignments.stream_id', '=', 'streams.id')
-                ->select('teacher_assignments.*', 'users.name as teacher_name', 'subjects.name as subject_name', 'streams.name as stream_name'))
             ->columns([
-                Tables\Columns\TextColumn::make('teacher_name')->label('Teacher')->searchable(),
-                Tables\Columns\TextColumn::make('subject_name')->label('Subject')->searchable(),
-                Tables\Columns\TextColumn::make('stream_name')->label('Stream')->searchable(),
+                Tables\Columns\TextColumn::make('teacher.name')->label('Teacher')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('subject.name')->label('Subject')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('stream.name')->label('Stream')->searchable()->sortable(),
             ])
-            ->actions([
-                Tables\Actions\DeleteAction::make()->action(function ($record) {
-                    DB::table('teacher_assignments')
-                        ->where('teacher_id', $record->teacher_id)
-                        ->where('subject_id', $record->subject_id)
-                        ->where('stream_id', $record->stream_id)
-                        ->delete();
-                }),
-            ])
-            ->bulkActions([]);
+            ->actions([Tables\Actions\DeleteAction::make()])
+            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
