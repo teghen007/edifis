@@ -83,6 +83,14 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
                 _stat('Grade', r.grade, _gradeColor(r.grade)),
                 _stat('Position', '${r.position}/${r.outOf}'),
               ]),
+              if (r.mention.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _stat('Mention', r.mention, AppColors.gold),
+              ],
+              if (r.classAverage.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _stat('Class avg', r.classAverage, AppColors.blue600),
+              ],
               const SizedBox(height: 16),
               _downloading
                 ? const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())
@@ -103,6 +111,7 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(s.subject, style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink)),
                   Text('Coef ${s.coefficient}  ·  Total ${s.weighted}', style: const TextStyle(fontSize: 11.5, color: AppColors.muted)),
+                  if (s.classAvg.isNotEmpty) Text('Class avg ${s.classAvg}', style: const TextStyle(fontSize: 11.5, color: AppColors.blue600)),
                   if (s.remark.isNotEmpty) Text(s.remark, style: const TextStyle(fontSize: 12, color: AppColors.muted)),
                 ])),
                 Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
