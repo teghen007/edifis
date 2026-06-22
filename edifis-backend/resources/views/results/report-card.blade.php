@@ -46,12 +46,17 @@
             <td class="label">Term</td><td class="val">{{ $term_name }}</td>
             <td class="label">Position</td><td class="val">{{ $position }} of {{ $out_of }}</td>
         </tr>
+        <tr>
+            <td class="label">Class Avg</td><td class="val">{{ $class_average ?? '—' }}</td>
+            <td class="label">Mention</td><td class="val">{{ $mention }}</td>
+        </tr>
     </table>
 
     <table class="summary">
         <tr>
             <td><div class="big">{{ $overall_average }}</div><div class="cap">Average / 20</div></td>
             <td><div class="big">{{ $grade }}</div><div class="cap">Overall Grade</div></td>
+            <td><div class="big">{{ $mention }}</div><div class="cap">Mention</div></td>
             <td><div class="big">{{ $position }}/{{ $out_of }}</div><div class="cap">Class Position</div></td>
         </tr>
     </table>
@@ -59,12 +64,13 @@
     <table class="marks">
         <thead>
             <tr>
-                <th style="width:34%">Subject</th>
-                <th class="num" style="width:12%">Avg /20</th>
+                <th style="width:30%">Subject</th>
+                <th class="num" style="width:10%">Avg /20</th>
                 <th class="num" style="width:8%">Coef</th>
-                <th class="num" style="width:12%">Total</th>
-                <th class="num" style="width:10%">Grade</th>
-                <th style="width:24%">Remark</th>
+                <th class="num" style="width:11%">Total</th>
+                <th class="num" style="width:9%">Grade</th>
+                <th class="num" style="width:10%">Class Avg</th>
+                <th style="width:22%">Remark</th>
             </tr>
         </thead>
         <tbody>
@@ -75,6 +81,7 @@
                 <td class="num">{{ $s->coefficient }}</td>
                 <td class="num">{{ $s->weighted }}</td>
                 <td class="num"><span class="grade-badge">{{ $s->grade }}</span></td>
+                <td class="num">{{ $s->class_avg ?? '—' }}</td>
                 <td>{{ $s->remark ?? '' }}</td>
             </tr>
             @endforeach

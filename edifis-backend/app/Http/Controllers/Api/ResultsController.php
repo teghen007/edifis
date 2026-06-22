@@ -161,6 +161,7 @@ class ResultsController
             ->where('subject_results.student_id', $studentId)
             ->where('subject_results.term_id', $termId)
             ->select(
+                'subjects.id as subject_id',
                 'subjects.name as subject_name',
                 'subject_results.average',
                 'subject_results.grade',
@@ -171,12 +172,63 @@ class ResultsController
             ->orderBy('subjects.name')
             ->get();
 
+        $classStats = DB::table('subject_results')
+            ->where('stream_id', $termResult->stream_id)
+            ->where('term_id', $termId)
+            ->select(
+                'subject_id',
+                DB::raw('ROUND(AVG(average)::numeric, 2) as class_avg'),
+                DB::raw('MAX(average) as class_high'),
+                DB::raw('MIN(average) as class_low')
+            )
+            ->groupBy('subject_id')
+            ->pluck('subject_id');
+
+        $classStatsMap = DB::table('subject_results')
+            ->where('stream_id', $termResult->stream_id)
+            ->where('term_id', $termId)
+            ->select(
+                'subject_id',
+                DB::raw('ROUND(AVG(average)::numeric, 2) as class_avg'),
+                DB::raw('MAX(average) as class_high'),
+                DB::raw('MIN(average) as class_low')
+            )
+            ->groupBy('subject_id')
+            ->get()
+            ->keyBy('subject_id');
+
+        $subjects = $subjects->map(function ($s) use ($classStatsMap) {
+            $stats = $classStatsMap->get($s->subject_id);
+            $s->class_avg = $stats->class_avg ?? null;
+            $s->class_high = $stats->class_high ?? null;
+            $s->class_low = $stats->class_low ?? null;
+            return $s;
+        });
+
+        $overallAvg = (float) $termResult->overall_average;
+        $mention = match (true) {
+            $overallAvg >= 18 => 'Excellent',
+            $overallAvg >= 16 => 'Very Good',
+            $overallAvg >= 14 => 'Good',
+            $overallAvg >= 12 => 'Fairly Good',
+            $overallAvg >= 10 => 'Average',
+            default => 'Weak',
+        };
+
+        $classAverage = DB::table('term_results')
+            ->where('stream_id', $termResult->stream_id)
+            ->where('term_id', $termId)
+            ->select(DB::raw('ROUND(AVG(overall_average)::numeric, 2) as class_average'))
+            ->value('class_average');
+
         return [
             'student_name' => trim(($student->given_name ?? '') . ' ' . ($student->family_name ?? '')),
             'stream_name' => $stream->name ?? '',
             'term_name' => $term->name ?? '',
             'overall_average' => $termResult->overall_average,
             'grade' => $termResult->grade,
+            'mention' => $mention,
+            'class_average' => $classAverage,
             'position' => $termResult->position,
             'out_of' => $outOf,
             'ai_remark' => $termResult->ai_remark ?? null,
