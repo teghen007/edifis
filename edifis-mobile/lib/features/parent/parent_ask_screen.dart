@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/network/dio_client.dart';
 import '../../core/services/dashboard_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
-import '../../shared/widgets/glossy_button.dart';
 
 class ParentAskScreen extends ConsumerStatefulWidget {
   const ParentAskScreen({super.key});
@@ -42,8 +41,9 @@ class _ParentAskScreenState extends ConsumerState<ParentAskScreen> {
   void dispose() { _input.dispose(); _scroll.dispose(); super.dispose(); }
 
   Future<void> _send(String text) async {
-    if (text.trim().isEmpty) return;
-    final q = text.trim().substring(0, 500);
+    final t = text.trim();
+    if (t.isEmpty) return;
+    final q = t.length > 500 ? t.substring(0, 500) : t;
     setState(() {
       _messages.add((fromUser: true, text: q));
       _loading = true;
