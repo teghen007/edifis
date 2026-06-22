@@ -172,18 +172,6 @@ class ResultsController
             ->orderBy('subjects.name')
             ->get();
 
-        $classStats = DB::table('subject_results')
-            ->where('stream_id', $termResult->stream_id)
-            ->where('term_id', $termId)
-            ->select(
-                'subject_id',
-                DB::raw('ROUND(AVG(average)::numeric, 2) as class_avg'),
-                DB::raw('MAX(average) as class_high'),
-                DB::raw('MIN(average) as class_low')
-            )
-            ->groupBy('subject_id')
-            ->pluck('subject_id');
-
         $classStatsMap = DB::table('subject_results')
             ->where('stream_id', $termResult->stream_id)
             ->where('term_id', $termId)
