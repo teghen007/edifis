@@ -76,6 +76,36 @@ final mastersheetProvider = FutureProvider.family<Mastersheet, (String,String)>(
   final r = await ref.read(dioProvider).get('/results/mastersheet', queryParameters: {'stream_id':k.$1,'term_id':k.$2});
   return Mastersheet.fromJson(r.data as Map<String,dynamic>); });
 
+class StreamAvg { final String stream; final double average; StreamAvg(this.stream, this.average); }
+class TopStudent { final String name, stream; final double average; TopStudent(this.name, this.stream, this.average); }
+class PerformanceOverview {
+  final bool hasData;
+  final String termName;
+  final double schoolAverage; final int passRate, studentsRanked;
+  final Map<String,int> gradeDist;
+  final List<StreamAvg> byStream;
+  final List<TopStudent> topStudents;
+  PerformanceOverview({required this.hasData, required this.termName, required this.schoolAverage,
+    required this.passRate, required this.studentsRanked, required this.gradeDist,
+    required this.byStream, required this.topStudents});
+  factory PerformanceOverview.fromJson(Map<String,dynamic> j) {
+    double d(dynamic v)=> v is num ? v.toDouble() : double.tryParse('${v??0}') ?? 0;
+    int n(dynamic v)=> v is int ? v : int.tryParse('${v??0}') ?? 0;
+    final gd = <String,int>{};
+    (j['grade_distribution'] as Map?)?.forEach((k,v)=> gd['$k']=n(v));
+    return PerformanceOverview(
+      hasData: j['has_data']==true,
+      termName: '${j['term_name']??''}',
+      schoolAverage: d(j['school_average']), passRate: n(j['pass_rate']), studentsRanked: n(j['students_ranked']),
+      gradeDist: gd,
+      byStream: ((j['by_stream']??[]) as List).map((e)=>StreamAvg('${e['stream']??''}', d(e['average']))).toList(),
+      topStudents: ((j['top_students']??[]) as List).map((e)=>TopStudent('${e['name']??''}', '${e['stream']??''}', d(e['average']))).toList());
+  }
+}
+final performanceOverviewProvider = FutureProvider<PerformanceOverview>((ref) async {
+  final r = await ref.read(dioProvider).get('/results/overview');
+  return PerformanceOverview.fromJson(r.data as Map<String,dynamic>); });
+
 class ResultsApi { final Ref _ref; ResultsApi(this._ref);
   Future<Map<String,dynamic>> compute(String streamId, String termId) async =>
     (await _ref.read(dioProvider).post('/results/compute', data:{'stream_id':streamId,'term_id':termId})).data as Map<String,dynamic>; }

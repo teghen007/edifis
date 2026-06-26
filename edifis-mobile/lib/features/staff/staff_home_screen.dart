@@ -38,7 +38,8 @@ class StaffHomeScreen extends ConsumerWidget {
     final a = <Widget>[];
     if (role == 'principal' || role == 'vice_principal') {
       a.add(_qa(c, LucideIcons.sparkles, 'Ask AI', AppColors.gold, '/vacuum'));
-      a.add(_qa(c, LucideIcons.award, 'Results', AppColors.blue700, '/results'));
+      a.add(_qa(c, LucideIcons.chartColumn, 'Performance', AppColors.blue700, '/performance'));
+      a.add(_qa(c, LucideIcons.award, 'Results', AppColors.blue600, '/results'));
     }
     if (role == 'bursar' || role == 'principal') {
       a.add(_qa(c, LucideIcons.chartPie, 'Fees', AppColors.blue600, '/fees-overview'));
