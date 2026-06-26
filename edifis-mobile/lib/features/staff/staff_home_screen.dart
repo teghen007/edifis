@@ -135,20 +135,6 @@ class StaffHomeScreen extends ConsumerWidget {
               ]),
             ),
           ),
-          me.maybeWhen(
-            data: (m) {
-              final actions = _actionsFor(context, m.role);
-              if (actions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-              return SliverToBoxAdapter(child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 18, 0, 2),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Padding(padding: EdgeInsets.only(right: 16),
-                    child: Text('Quick actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.ink, fontSize: 15))),
-                  const SizedBox(height: 14),
-                  SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: actions)),
-                ])).animate().fadeIn(duration: 350.ms, delay: 120.ms));
-            },
-            orElse: () => const SliverToBoxAdapter(child: SizedBox.shrink())),
           summary.when(
             loading: () => const SliverFillRemaining(
               hasScrollBody: false,
@@ -211,6 +197,25 @@ class StaffHomeScreen extends ConsumerWidget {
                       },
                       childCount: cards.length))),
           ),
+          me.maybeWhen(
+            data: (m) {
+              final actions = _actionsFor(context, m.role);
+              if (actions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+              return SliverToBoxAdapter(
+                child: SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 0, 18),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Padding(padding: EdgeInsets.only(right: 16),
+                        child: Text('Quick actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.ink, fontSize: 15))),
+                      const SizedBox(height: 14),
+                      SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: actions)),
+                    ]),
+                  ),
+                )).animate().fadeIn(duration: 350.ms, delay: 120.ms);
+            },
+            orElse: () => const SliverToBoxAdapter(child: SizedBox.shrink())),
         ]),
       ),
     );
