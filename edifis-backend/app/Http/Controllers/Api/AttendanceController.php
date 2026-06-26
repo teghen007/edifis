@@ -4,16 +4,111 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\Academics\Models\AcademicYear;
+use App\Domain\Academics\Models\Stream;
 use App\Domain\Attendance\Actions\OpenSession;
+use App\Domain\Attendance\Actions\RecordRollCall;
 use App\Domain\Attendance\Actions\RecordScan;
 use App\Domain\Attendance\Actions\CloseSession;
 use App\Domain\Attendance\Actions\VoidScan;
+use App\Domain\Attendance\Models\AttendanceSession;
 use App\Domain\Attendance\Queries\SessionTally;
+use App\Domain\Students\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AttendanceController
 {
+    /** Sections (streams) the user can take attendance for, in the current year. */
+    public function sections(): JsonResponse
+    {
+        $year = AcademicYear::where('is_current', true)->first();
+
+        $streams = Stream::query()
+            ->when($year, fn ($q) => $q->where('academic_year_id', $year->id))
+            ->where('active', true)
+            ->with('schoolClass')
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'class' => $s->schoolClass?->name,
+            ]);
+
+        return response()->json($streams);
+    }
+
+    /** The roll-call sheet: roster + any marks already recorded for that day/period. */
+    public function rollCallSheet(Request $request): JsonResponse
+    {
+        $v = $request->validate([
+            'stream_id' => ['required', 'uuid'],
+            'date' => ['required', 'date'],
+            'period' => ['nullable', 'in:AM,PM,FULL'],
+        ]);
+        $period = $v['period'] ?? 'FULL';
+
+        $session = AttendanceSession::where([
+            'stream_id' => $v['stream_id'],
+            'attendance_date' => $v['date'],
+            'period' => $period,
+            'mode' => 'rollcall',
+        ])->first();
+
+        $existing = $session ? $session->events()->get()->keyBy('student_id') : collect();
+
+        $students = Student::where('stream_id', $v['stream_id'])
+            ->where('active', true)
+            ->orderBy('family_name')->orderBy('given_name')
+            ->get(['id', 'given_name', 'family_name'])
+            ->map(fn ($s) => [
+                'id' => $s->id,
+                'name' => trim($s->family_name . ' ' . $s->given_name),
+                'status' => $existing[$s->id]->status ?? null,
+                'reason' => $existing[$s->id]->reason ?? null,
+            ]);
+
+        return response()->json([
+            'session_id' => $session?->id,
+            'period' => $period,
+            'students' => $students,
+        ]);
+    }
+
+    /** Submit a daily roll call for a section. */
+    public function rollCall(Request $request, RecordRollCall $action): JsonResponse
+    {
+        $v = $request->validate([
+            'stream_id' => ['required', 'uuid'],
+            'date' => ['required', 'date'],
+            'period' => ['nullable', 'in:AM,PM,FULL'],
+            'entries' => ['required', 'array', 'min:1'],
+            'entries.*.student_id' => ['required', 'uuid'],
+            'entries.*.status' => ['required', 'in:present,absent,late,excused'],
+            'entries.*.reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $session = $action->handle(
+            $v['stream_id'],
+            $v['date'],
+            $v['period'] ?? 'FULL',
+            $request->user()->id,
+            $v['entries'],
+        );
+
+        return response()->json([
+            'session_id' => $session->id,
+            'date' => $v['date'],
+            'period' => $session->period,
+            'marked' => $session->events->count(),
+            'present' => $session->events->where('status', 'present')->count(),
+            'absent' => $session->events->where('status', 'absent')->count(),
+            'late' => $session->events->where('status', 'late')->count(),
+            'excused' => $session->events->where('status', 'excused')->count(),
+        ], 201);
+    }
+
     public function openSession(Request $request, OpenSession $action): JsonResponse
     {
         $validated = $request->validate([

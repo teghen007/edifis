@@ -99,6 +99,16 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:bursar')
         ->name('issuance.return');
 
+    // Daily roll-call attendance (section-based, subject-free, any authorized staff)
+    Route::get('/attendance/sections', [AttendanceController::class, 'sections'])
+        ->name('attendance.sections');
+    Route::get('/attendance/rollcall', [AttendanceController::class, 'rollCallSheet'])
+        ->middleware('role:class_master|subject_teacher|discipline_master|principal|vice_principal|secretary')
+        ->name('attendance.rollcall.sheet');
+    Route::post('/attendance/rollcall', [AttendanceController::class, 'rollCall'])
+        ->middleware('role:class_master|subject_teacher|discipline_master|principal|vice_principal|secretary')
+        ->name('attendance.rollcall.submit');
+
     Route::post('/attendance/sessions', [AttendanceController::class, 'openSession'])
         ->middleware('role:class_master|subject_teacher')
         ->name('attendance.sessions.open');

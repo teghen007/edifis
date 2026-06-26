@@ -24,6 +24,7 @@ class AttendanceEvent extends Model
         'scanned_by',
         'source',
         'status',
+        'reason',
         'void_reason',
     ];
 
