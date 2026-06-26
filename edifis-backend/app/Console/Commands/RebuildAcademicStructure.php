@@ -65,16 +65,20 @@ class RebuildAcademicStructure extends Command
 
             // 3. Assign every active student to exactly one section, derived from the
             //    legacy current_class_id grouping (f1a / f1b / f2a / strays).
-            $assign = function (Student $s, SchoolClass $class, Stream $stream): void {
+            $assign = function (Student $s, SchoolClass $class, Stream $stream) use ($year): void {
                 $s->update([
                     'class_id' => $class->id,
                     'current_class_id' => $class->id,
                     'stream_id' => $stream->id,
                 ]);
-                DB::table('student_stream')->where('student_id', $s->id)->delete();
+                DB::table('student_stream')
+                    ->where('student_id', $s->id)
+                    ->where('academic_year_id', $year->id)
+                    ->delete();
                 DB::table('student_stream')->insert([
                     'student_id' => $s->id,
                     'stream_id' => $stream->id,
+                    'academic_year_id' => $year->id,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -104,6 +108,7 @@ class RebuildAcademicStructure extends Command
                 if ($subjectIds->isEmpty()) {
                     $subjectIds = Subject::where('active', true)->pluck('id');
                 }
+                $coefById = Subject::whereIn('id', $subjectIds)->pluck('coefficient', 'id');
 
                 foreach (Subject::whereIn('id', $subjectIds)->get() as $subject) {
                     $code = trim($subject->code . ' ' . $shortLabel($class));
@@ -134,7 +139,7 @@ class RebuildAcademicStructure extends Command
                     foreach ($subjectIds as $sid) {
                         DB::table('subject_stream')->updateOrInsert(
                             ['stream_id' => $stream->id, 'subject_id' => $sid],
-                            ['updated_at' => now(), 'created_at' => now()],
+                            ['coefficient' => $coefById[$sid] ?? 1, 'updated_at' => now(), 'created_at' => now()],
                         );
                     }
                 }
