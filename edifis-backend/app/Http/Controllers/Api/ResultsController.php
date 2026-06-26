@@ -83,6 +83,57 @@ class ResultsController
         }
     }
 
+    /** School-wide performance aggregates for the principal's charts (latest computed term). */
+    public function overview(): JsonResponse
+    {
+        $latest = DB::table('term_results')->orderByDesc('created_at')->first();
+        if (!$latest) {
+            return response()->json(['has_data' => false]);
+        }
+
+        $termId = $latest->term_id;
+        $rows = DB::table('term_results')->where('term_id', $termId)->get();
+        $total = $rows->count();
+        $passed = $rows->where('overall_average', '>=', 10)->count();
+
+        $top = DB::table('term_results')
+            ->join('students', 'term_results.student_id', '=', 'students.id')
+            ->leftJoin('streams', 'term_results.stream_id', '=', 'streams.id')
+            ->where('term_results.term_id', $termId)
+            ->orderByDesc('term_results.overall_average')
+            ->limit(5)
+            ->selectRaw("trim(students.given_name || ' ' || students.family_name) as name, streams.name as stream, term_results.overall_average as average")
+            ->get()
+            ->map(fn ($r) => ['name' => $r->name, 'stream' => $r->stream ?? '', 'average' => (float) $r->average]);
+
+        $byStream = DB::table('term_results')
+            ->leftJoin('streams', 'term_results.stream_id', '=', 'streams.id')
+            ->where('term_results.term_id', $termId)
+            ->groupBy('streams.name')
+            ->selectRaw('streams.name as stream, ROUND(AVG(term_results.overall_average)::numeric, 2) as average')
+            ->orderByDesc('average')
+            ->get()
+            ->map(fn ($r) => ['stream' => $r->stream ?? '—', 'average' => (float) $r->average]);
+
+        $grades = $rows->groupBy('grade')->map->count();
+        $gradeDist = [];
+        foreach (['A', 'B', 'C', 'D', 'E', 'F'] as $g) {
+            $gradeDist[$g] = (int) ($grades[$g] ?? 0);
+        }
+
+        return response()->json([
+            'has_data' => true,
+            'term_name' => DB::table('terms')->where('id', $termId)->value('name') ?? 'Term',
+            'students_ranked' => $total,
+            'school_average' => round((float) $rows->avg('overall_average'), 2),
+            'pass_rate' => $total > 0 ? (int) round($passed / $total * 100) : 0,
+            'passed' => $passed,
+            'top_students' => $top->values(),
+            'by_stream' => $byStream->values(),
+            'grade_distribution' => $gradeDist,
+        ]);
+    }
+
     public function reportCard(Request $request): JsonResponse
     {
         $studentId = $request->query('student_id');

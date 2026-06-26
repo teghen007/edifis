@@ -198,6 +198,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/promotions/{decisionId}/override', [\App\Http\Controllers\Api\PromotionController::class, 'override'])
         ->middleware('role:principal')
         ->name('promotions.override');
+    Route::get('/results/overview', [ResultsController::class, 'overview'])
+        ->middleware('role:principal|vice_principal|school_admin')
+        ->name('results.overview');
     Route::get('/results/report-card', [ResultsController::class, 'reportCard'])
         ->name('results.report-card');
     Route::get('/results/report-card/pdf', [ResultsController::class, 'reportCardPdf'])
