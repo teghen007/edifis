@@ -9,56 +9,69 @@ use App\Domain\Academics\Models\Stream;
 use App\Domain\Academics\Models\Test;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Concerns\ToCollection;
 use Ramsey\Uuid\Uuid;
 
-class MarkSheetImport implements ToCollection
+/**
+ * Reads the branded mark sheet produced by {@see \App\Exports\MarkSheetExport}.
+ * Self-describing: meta lives in columns G/H, and the data header row + columns
+ * are located by content (so styling/row changes don't break parsing).
+ *
+ * Columns: 0=S/N, 1=Student ID, 2=Student Name, 3=Marks.
+ */
+class MarkSheetImport implements \Maatwebsite\Excel\Concerns\ToCollection
 {
-    private string $streamId;
-    private string $subjectId;
-    private string $testId;
-    private int $maxScore;
-    private string $testName;
-    private string $classId;
+    private string $streamId = '';
+    private string $subjectId = '';
+    private string $testId = '';
+    private int $maxScore = 20;
+    private string $testName = '';
+    private string $classId = '';
+    private ?int $headerRow = null;
 
-    public function collection(Collection $rows)
+    public function collection(Collection $rows): void
     {
-        $metaMap = [];
-        for ($i = 0; $i < min(4, $rows->count()); $i++) {
-            $label = (string) ($rows[$i][3] ?? '');
-            $value = (string) ($rows[$i][4] ?? '');
-            if ($label && $value) {
-                $metaMap[$label] = $value;
+        $meta = [];
+        $scan = min(10, $rows->count());
+        for ($i = 0; $i < $scan; $i++) {
+            $label = trim((string) ($rows[$i][6] ?? ''));   // column G
+            $value = trim((string) ($rows[$i][7] ?? ''));   // column H
+            if (str_starts_with($label, 'meta_') && $value !== '') {
+                $meta[$label] = $value;
             }
         }
 
-        $this->streamId = $metaMap['meta_stream_id'] ?? '';
-        $this->subjectId = $metaMap['meta_subject_id'] ?? '';
-        $this->testId = $metaMap['meta_test_id'] ?? '';
-        $this->maxScore = (int) ($metaMap['meta_max'] ?? 20);
+        $this->streamId = $meta['meta_stream_id'] ?? '';
+        $this->subjectId = $meta['meta_subject_id'] ?? '';
+        $this->testId = $meta['meta_test_id'] ?? '';
+        $this->maxScore = (int) ($meta['meta_max'] ?? 20);
 
         if (!$this->streamId || !$this->subjectId || !$this->testId) {
-            throw new \RuntimeException('Missing meta data in uploaded file.');
+            throw new \RuntimeException('This file is missing its mark-sheet data. Please download a fresh sheet.');
         }
 
         $test = Test::find($this->testId);
         $this->testName = $test?->name ?? 'Unknown Sequence';
-        $stream = Stream::with('schoolClass')->find($this->streamId);
+        $stream = Stream::find($this->streamId);
         $this->classId = $stream?->class_id ?? '';
 
         if (!$this->classId) {
             throw new \RuntimeException('Stream not found for class_id.');
         }
+
+        $this->headerRow = $this->findHeaderRow($rows);
     }
 
-    public function process(string $ownerTeacherId): array
+    private function findHeaderRow(Collection $rows): int
     {
-        $recordMark = app(RecordMark::class);
-        $saved = 0;
-        $skipped = [];
-        $errors = [];
+        for ($i = 0; $i < $rows->count(); $i++) {
+            foreach ($rows[$i] as $cell) {
+                if (trim((string) $cell) === 'Student ID') {
+                    return $i;
+                }
+            }
+        }
 
-        return compact('saved', 'skipped', 'errors');
+        return 5; // sensible default (header on row 6)
     }
 
     public function ingest(Collection $rows, string $ownerTeacherId): array
@@ -68,16 +81,18 @@ class MarkSheetImport implements ToCollection
         $skipped = [];
         $errors = [];
 
-        for ($i = 0; $i < $rows->count(); $i++) {
-            $row = $rows[$i];
-            $studentId = (string) ($row[0] ?? '');
-            $marksStr = (string) ($row[2] ?? '');
+        $start = ($this->headerRow ?? 5) + 1;
 
-            if (empty($studentId) || $i < 6) {
+        for ($i = $start; $i < $rows->count(); $i++) {
+            $row = $rows[$i];
+            $studentId = trim((string) ($row[1] ?? ''));   // Student ID
+            $marksStr = trim((string) ($row[3] ?? ''));    // Marks
+
+            if ($studentId === '') {
                 continue;
             }
 
-            if ($marksStr === '' || $marksStr === null) {
+            if ($marksStr === '') {
                 $skipped[] = $i + 1;
                 continue;
             }
@@ -97,7 +112,7 @@ class MarkSheetImport implements ToCollection
                 && DB::table('student_subject')->where('student_id', $studentId)->where('subject_id', $this->subjectId)->exists();
 
             if (!$enrolled) {
-                $errors[] = ['row' => $i + 1, 'reason' => "Student not enrolled in this stream/subject"];
+                $errors[] = ['row' => $i + 1, 'reason' => 'Student not enrolled in this stream/subject'];
                 continue;
             }
 
@@ -124,7 +139,18 @@ class MarkSheetImport implements ToCollection
         return compact('saved', 'skipped', 'errors');
     }
 
-    public function getStreamId(): string { return $this->streamId; }
-    public function getSubjectId(): string { return $this->subjectId; }
-    public function getTestId(): string { return $this->testId; }
+    public function getStreamId(): string
+    {
+        return $this->streamId;
+    }
+
+    public function getSubjectId(): string
+    {
+        return $this->subjectId;
+    }
+
+    public function getTestId(): string
+    {
+        return $this->testId;
+    }
 }
