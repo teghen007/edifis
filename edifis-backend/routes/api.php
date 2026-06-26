@@ -167,6 +167,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/parent/children/{studentId}/results', [ParentPortalController::class, 'childResults'])
         ->middleware('role:parent')
         ->name('parent.child-results');
+    Route::get('/parent/children/{studentId}/trend', [ParentPortalController::class, 'childTrend'])
+        ->middleware('role:parent')
+        ->name('parent.child-trend');
     Route::get('/parent/children/{studentId}/attendance', [ParentPortalController::class, 'childAttendance'])
         ->middleware('role:parent')
         ->name('parent.child-attendance');

@@ -64,6 +64,26 @@ class ParentPortalController
         ]);
     }
 
+    public function childTrend(Request $request, string $studentId): JsonResponse
+    {
+        abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');
+
+        $points = \Illuminate\Support\Facades\DB::table('term_results')
+            ->join('terms', 'term_results.term_id', '=', 'terms.id')
+            ->where('term_results.student_id', $studentId)
+            ->orderBy('terms.position')
+            ->selectRaw('terms.name as term, term_results.overall_average as average, term_results.grade as grade, term_results.position as rank')
+            ->get()
+            ->map(fn ($r) => [
+                'term' => $r->term,
+                'average' => (float) $r->average,
+                'grade' => $r->grade,
+                'rank' => (int) $r->rank,
+            ]);
+
+        return response()->json(['points' => $points]);
+    }
+
     public function childFees(Request $request, string $studentId, BalanceQuery $balance): JsonResponse
     {
         abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');

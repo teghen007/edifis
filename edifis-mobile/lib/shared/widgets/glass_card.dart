@@ -17,13 +17,19 @@ class GlassCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border, width: 1),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border.withValues(alpha: .55), width: 1),
         boxShadow: [
+          // Soft, layered shadow — diffuse and light (modern card look).
           BoxShadow(
-            color: AppColors.navy.withValues(alpha: .18),
-            blurRadius: 30,
-            offset: const Offset(0, 16),
+            color: AppColors.navy.withValues(alpha: .06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: AppColors.navy.withValues(alpha: .04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
