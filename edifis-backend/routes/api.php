@@ -188,6 +188,24 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:pea_admin')
         ->name('onboarding.approve');
 
+    // Academic season rotation (Term 1 -> 2 -> 3 -> year-end)
+    Route::get('/season', [\App\Http\Controllers\Api\SeasonController::class, 'show'])
+        ->name('season.show');
+    Route::get('/season/years', [\App\Http\Controllers\Api\SeasonController::class, 'years'])
+        ->name('season.years');
+    Route::post('/season/sequence/next', [\App\Http\Controllers\Api\SeasonController::class, 'openNextSequence'])
+        ->middleware('role:principal|vice_principal|school_admin')
+        ->name('season.sequence.next');
+    Route::post('/season/advance', [\App\Http\Controllers\Api\SeasonController::class, 'advance'])
+        ->middleware('role:principal|vice_principal|school_admin')
+        ->name('season.advance');
+    Route::post('/season/terms/{termId}/reopen', [\App\Http\Controllers\Api\SeasonController::class, 'reopen'])
+        ->middleware('role:principal|school_admin')
+        ->name('season.reopen');
+    Route::post('/season/close-year', [\App\Http\Controllers\Api\SeasonController::class, 'closeYear'])
+        ->middleware('role:principal|school_admin')
+        ->name('season.close-year');
+
     Route::post('/results/compute', [ResultsController::class, 'compute'])
         ->middleware('role:principal|vice_principal|school_admin')
         ->name('results.compute');
