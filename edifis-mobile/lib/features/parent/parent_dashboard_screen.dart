@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -111,6 +112,7 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
               final results = ref.watch(childResultsProvider(_selectedId!));
               final attendance = ref.watch(childAttendanceProvider(_selectedId!));
               final balance = ref.watch(childBalanceProvider(_selectedId!));
+              final trend = ref.watch(childTrendProvider(_selectedId!));
 
               return SliverList(delegate: SliverChildListDelegate([
                 Padding(
@@ -157,6 +159,12 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                             () => context.push('/fees-statement', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
                         ]),
                         const SizedBox(height: 16),
+                        trend.maybeWhen(
+                          data: (pts) => pts.length < 2 ? const SizedBox.shrink() : Column(children: [
+                            _trendCard(pts),
+                            const SizedBox(height: 16),
+                          ]),
+                          orElse: () => const SizedBox.shrink()),
                         if (r['marks'] is List && (r['marks'] as List).isNotEmpty)
                           ...((r['marks'] as List).take(8).map((m) => _markRow(m))),
                       ]);
@@ -188,6 +196,38 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
           style: const TextStyle(fontSize: 11.5, color: AppColors.ink, height: 1.1)),
       ])),
     );
+  }
+
+  Widget _trendCard(List<dynamic> pts) {
+    double avg(int i) => (pts[i]['average'] as num?)?.toDouble() ?? 0;
+    return GlassCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Text('Results trend', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.ink)),
+      const SizedBox(height: 4),
+      const Text('Average per term, out of 20', style: TextStyle(fontSize: 12, color: AppColors.muted)),
+      const SizedBox(height: 16),
+      SizedBox(height: 160, child: LineChart(LineChartData(
+        minY: 0, maxY: 20,
+        gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: 5,
+          getDrawingHorizontalLine: (v) => FlLine(color: AppColors.border.withValues(alpha: .5), strokeWidth: 1)),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, interval: 5, reservedSize: 28,
+            getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 10, color: AppColors.muted)))),
+          bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) {
+            final i = v.toInt();
+            return Padding(padding: const EdgeInsets.only(top: 6),
+              child: Text(i >= 0 && i < pts.length ? '${pts[i]['term']}'.replaceAll('Term ', 'T') : '',
+                style: const TextStyle(fontSize: 10, color: AppColors.muted)));
+          }))),
+        lineBarsData: [LineChartBarData(
+          spots: [for (var i = 0; i < pts.length; i++) FlSpot(i.toDouble(), avg(i))],
+          isCurved: true, color: AppColors.blue600, barWidth: 3,
+          dotData: const FlDotData(show: true),
+          belowBarData: BarAreaData(show: true, color: AppColors.blue600.withValues(alpha: .12)))],
+      ))),
+    ]));
   }
 
   Widget _summaryTile(IconData icon, String value, String label) {

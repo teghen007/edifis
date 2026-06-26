@@ -21,6 +21,14 @@ class ParentApi {
       return {'balance': 0, 'currency': 'XAF', 'items': <dynamic>[]};
     }
   }
+
+  Future<List<dynamic>> trend(String id) async {
+    try {
+      return (await _dio.get('/parent/children/$id/trend')).data['points'] as List;
+    } catch (_) {
+      return <dynamic>[];
+    }
+  }
 }
 
 final parentApiProvider = Provider<ParentApi>((ref) => ParentApi(ref.read(dioProvider)));
@@ -33,3 +41,5 @@ final childBalanceProvider = FutureProvider.family<dynamic, String>(
     (ref, id) => ref.read(parentApiProvider).balance(id));
 final childFeesProvider = FutureProvider.family<Map<String, dynamic>, String>(
     (ref, id) => ref.read(parentApiProvider).fees(id));
+final childTrendProvider = FutureProvider.family<List<dynamic>, String>(
+    (ref, id) => ref.read(parentApiProvider).trend(id));
