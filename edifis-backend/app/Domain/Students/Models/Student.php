@@ -52,6 +52,12 @@ class Student extends Model
         return $this->belongsTo(SchoolClass::class, 'class_id');
     }
 
+    /** The student's current section (authoritative single link). */
+    public function stream(): BelongsTo
+    {
+        return $this->belongsTo(Stream::class, 'stream_id');
+    }
+
     public function streams(): BelongsToMany
     {
         return $this->belongsToMany(Stream::class, 'student_stream', 'student_id', 'stream_id')
