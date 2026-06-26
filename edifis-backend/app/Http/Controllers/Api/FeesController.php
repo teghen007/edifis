@@ -14,10 +14,63 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Ramsey\Uuid\Uuid;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FeesController
 {
+    /** Aggregated fee figures for charts (bursar/principal dashboards). */
+    public function overview(): JsonResponse
+    {
+        $charged = (int) DB::table('ledger_entries')->where('amount', '>', 0)->sum('amount');
+        $collected = (int) abs((int) DB::table('ledger_entries')->where('amount', '<', 0)->sum('amount'));
+
+        $balances = DB::table('ledger_entries')
+            ->select('student_id', DB::raw('SUM(amount) as bal'))
+            ->groupBy('student_id')
+            ->get();
+
+        $outstanding = 0;
+        $debtors = [];
+        foreach ($balances as $b) {
+            if ((int) $b->bal > 0) {
+                $outstanding += (int) $b->bal;
+                $debtors[$b->student_id] = (int) $b->bal;
+            }
+        }
+        arsort($debtors);
+
+        $topDebtors = [];
+        foreach (array_slice($debtors, 0, 5, true) as $sid => $bal) {
+            $s = DB::table('students')->where('id', $sid)->first();
+            $topDebtors[] = [
+                'name' => trim(($s->given_name ?? '') . ' ' . ($s->family_name ?? '')),
+                'balance' => (int) $bal,
+            ];
+        }
+
+        $byClass = DB::table('ledger_entries')
+            ->join('students', 'ledger_entries.student_id', '=', 'students.id')
+            ->join('school_classes', 'students.current_class_id', '=', 'school_classes.id')
+            ->select('school_classes.name', DB::raw('SUM(ledger_entries.amount) as bal'))
+            ->groupBy('school_classes.name')
+            ->get()
+            ->map(fn ($r) => ['class' => $r->name, 'outstanding' => max(0, (int) $r->bal)])
+            ->filter(fn ($r) => $r['outstanding'] > 0)
+            ->sortByDesc('outstanding')
+            ->values();
+
+        return response()->json([
+            'charged_total' => $charged,
+            'collected_total' => $collected,
+            'outstanding_total' => $outstanding,
+            'debtors_count' => count($debtors),
+            'currency' => 'XAF',
+            'top_debtors' => $topDebtors,
+            'by_class' => $byClass,
+        ]);
+    }
+
     /**
      * Bill every active student in a class for the fee structures that apply to them
      * (respecting day/boarding). Idempotent — re-running won't double-charge.
