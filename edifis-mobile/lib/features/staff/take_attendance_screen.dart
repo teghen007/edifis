@@ -10,6 +10,7 @@ import '../../core/services/students_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../../shared/widgets/glossy_button.dart';
+import '../../shared/widgets/hint_banner.dart';
 
 class TakeAttendanceScreen extends ConsumerStatefulWidget {
   const TakeAttendanceScreen({super.key});
@@ -81,6 +82,7 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
 
     return SingleChildScrollView(padding: const EdgeInsets.all(16), child: GlassCard(child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const HintBanner('Pick your class, subject and period, then tap each student who is present and finish to save.'),
         DropdownButtonFormField<String>(
           initialValue: _classId, decoration: const InputDecoration(labelText: 'Class'),
           items: classes.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),

@@ -7,6 +7,7 @@ import '../../core/services/students_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../../shared/widgets/glossy_button.dart';
+import '../../shared/widgets/hint_banner.dart';
 
 class SubmitMarkScreen extends ConsumerStatefulWidget {
   const SubmitMarkScreen({super.key});
@@ -75,6 +76,7 @@ class _SubmitMarkScreenState extends ConsumerState<SubmitMarkScreen> {
       appBar: AppBar(backgroundColor: AppColors.blue700, foregroundColor: Colors.white, title: const Text('Record Mark')),
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: GlassCard(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          const HintBanner('Record one mark at a time. To enter a whole class at once, use the Mark Sheet (Excel) button instead.'),
           _dropdown(classes, 'Class', (v) => setState(() { _classId = v; _studentId = null; }), _classId,
             (e) => e.id, (e) => e.name),
           const SizedBox(height: 12),

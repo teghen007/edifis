@@ -7,6 +7,7 @@ import '../../core/services/results_api.dart';
 import '../../core/services/students_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
+import '../../shared/widgets/hint_banner.dart';
 
 class ConductScreen extends ConsumerStatefulWidget {
   const ConductScreen({super.key});
@@ -65,6 +66,7 @@ class _ConductScreenState extends ConsumerState<ConductScreen> {
         title: const Row(mainAxisSize: MainAxisSize.min, children: [
           Icon(LucideIcons.shieldAlert, size: 22), SizedBox(width: 8), Text('Conduct')])),
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
+        const HintBanner('Choose the class and term, then set each student\'s conduct grade. It shows on their report card.'),
         GlassCard(child: Column(children: [
           streams.when(loading: () => const LinearProgressIndicator(), error: (_,__) => const SizedBox.shrink(),
             data: (s) => DropdownButtonFormField<String>(value: _streamId, decoration: const InputDecoration(labelText: 'Stream'),

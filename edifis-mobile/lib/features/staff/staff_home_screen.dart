@@ -39,6 +39,7 @@ class StaffHomeScreen extends ConsumerWidget {
     if (role == 'principal' || role == 'vice_principal') {
       buttons.add(FloatingActionButton.small(
         heroTag: 'vacuum',
+        tooltip: 'Ask EDIFIS AI about your school',
         backgroundColor: AppColors.gold,
         onPressed: () => context.push('/vacuum'),
         child: const Icon(LucideIcons.sparkles, color: Colors.white)));
@@ -46,6 +47,7 @@ class StaffHomeScreen extends ConsumerWidget {
     if (role == 'bursar' || role == 'principal') {
       buttons.add(FloatingActionButton.small(
         heroTag: 'fees',
+        tooltip: 'Fees sheet — charge or record payments (Excel)',
         backgroundColor: AppColors.blue300,
         onPressed: () => context.push('/fees-excel'),
         child: const Icon(LucideIcons.wallet, color: Colors.white)));
@@ -53,6 +55,7 @@ class StaffHomeScreen extends ConsumerWidget {
     if (role == 'class_master' || role == 'principal') {
       buttons.add(FloatingActionButton.small(
         heroTag: 'enroll',
+        tooltip: 'Subject enrolment — which student takes which subject (Excel)',
         backgroundColor: AppColors.blue400,
         onPressed: () => context.push('/enrollment-excel'),
         child: const Icon(LucideIcons.userCheck, color: Colors.white)));
@@ -60,6 +63,7 @@ class StaffHomeScreen extends ConsumerWidget {
     if (role == 'discipline_master' || role == 'principal') {
       buttons.add(FloatingActionButton.small(
         heroTag: 'conduct',
+        tooltip: 'Record student conduct for the term',
         backgroundColor: AppColors.blue300,
         onPressed: () => context.push('/conduct'),
         child: const Icon(LucideIcons.shieldAlert, color: Colors.white)));
@@ -67,11 +71,13 @@ class StaffHomeScreen extends ConsumerWidget {
     if (['subject_teacher', 'class_master', 'principal'].contains(role)) {
       buttons.add(FloatingActionButton.small(
         heroTag: 'excel',
+        tooltip: 'Mark sheet — download, fill marks, upload (Excel)',
         backgroundColor: AppColors.blue500,
         onPressed: () => context.push('/marks-excel'),
         child: const Icon(LucideIcons.fileSpreadsheet, color: Colors.white)));
       buttons.add(FloatingActionButton.extended(
         heroTag: 'mark',
+        tooltip: 'Record a single mark quickly',
         backgroundColor: AppColors.blue600,
         icon: const Icon(LucideIcons.plus, color: Colors.white),
         label: const Text('Record mark', style: TextStyle(color: Colors.white)),
