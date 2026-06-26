@@ -63,36 +63,46 @@ class RebuildAcademicStructure extends Command
                 );
             }
 
-            // 3. Assign every active student to exactly one section, derived from the
+            // 3. Make students.stream_id mirror the authoritative student_stream
+            //    enrolment. If a student has no enrolment yet, bootstrap one from the
             //    legacy current_class_id grouping (f1a / f1b / f2a / strays).
-            $assign = function (Student $s, SchoolClass $class, Stream $stream) use ($year): void {
-                $s->update([
-                    'class_id' => $class->id,
-                    'current_class_id' => $class->id,
-                    'stream_id' => $stream->id,
-                ]);
-                DB::table('student_stream')
-                    ->where('student_id', $s->id)
-                    ->where('academic_year_id', $year->id)
-                    ->delete();
-                DB::table('student_stream')->insert([
-                    'student_id' => $s->id,
-                    'stream_id' => $stream->id,
-                    'academic_year_id' => $year->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            };
+            $streamById = Stream::where('academic_year_id', $year->id)->get()->keyBy('id');
 
             foreach (Student::where('active', true)->get() as $s) {
-                $cc = (string) $s->current_class_id;
-                if (str_starts_with($cc, 'f1b') && isset($streams[$form1->id]['B'])) {
-                    $assign($s, $form1, $streams[$form1->id]['B']);
-                } elseif (str_starts_with($cc, 'f2') && $form2) {
-                    $assign($s, $form2, $streams[$form2->id]['A']);
-                } elseif ($form1) {
-                    $assign($s, $form1, $streams[$form1->id]['A']);
+                $link = DB::table('student_stream')
+                    ->where('student_id', $s->id)
+                    ->where('academic_year_id', $year->id)
+                    ->first();
+
+                if (! $link) {
+                    $cc = (string) $s->current_class_id;
+                    $stream = str_starts_with($cc, 'f1b') ? ($streams[$form1->id]['B'] ?? null)
+                        : ((str_starts_with($cc, 'f2') && $form2) ? $streams[$form2->id]['A']
+                            : ($form1 ? $streams[$form1->id]['A'] : null));
+                    if (! $stream) {
+                        continue;
+                    }
+                    DB::table('student_stream')->insert([
+                        'student_id' => $s->id,
+                        'stream_id' => $stream->id,
+                        'academic_year_id' => $year->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    $streamId = $stream->id;
+                } else {
+                    $streamId = $link->stream_id;
                 }
+
+                $stream = $streamById->get($streamId);
+                if (! $stream) {
+                    continue;
+                }
+                $s->update([
+                    'stream_id' => $streamId,
+                    'class_id' => $stream->class_id,
+                    'current_class_id' => $stream->class_id,
+                ]);
             }
 
             // 4. Class-scoped subject catalogue with class-specific codes + cascade.
