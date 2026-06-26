@@ -136,22 +136,24 @@ class StaffHomeScreen extends ConsumerWidget {
             ),
           ),
           summary.when(
-            loading: () => const SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()))),
-            error: (e, _) => SliverFillRemaining(
-              hasScrollBody: false,
-              child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(LucideIcons.wifiOff, size: 40, color: AppColors.muted),
-                const SizedBox(height: 12),
-                const Text('Couldn\'t load your dashboard.', style: TextStyle(color: AppColors.muted)),
-                const SizedBox(height: 12),
-                FilledButton(onPressed: () => ref.invalidate(dashboardSummaryProvider),
-                  child: const Text('Retry')),
-              ]))),
+            // Non-filling so the Quick Actions below stay reachable even while loading/failed.
+            loading: () => const SliverToBoxAdapter(
+              child: Padding(padding: EdgeInsets.symmetric(vertical: 70), child: Center(child: CircularProgressIndicator()))),
+            error: (e, _) => SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 50),
+                child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(LucideIcons.wifiOff, size: 40, color: AppColors.muted),
+                  const SizedBox(height: 12),
+                  const Text('Couldn\'t load your dashboard.', style: TextStyle(color: AppColors.muted)),
+                  const SizedBox(height: 12),
+                  FilledButton(onPressed: () => ref.invalidate(dashboardSummaryProvider),
+                    child: const Text('Retry')),
+                ])))),
             data: (cards) => cards.isEmpty
-              ? const SliverFillRemaining(hasScrollBody: false,
-                  child: Center(child: Text('No data yet.', style: TextStyle(color: AppColors.muted))))
+              ? const SliverToBoxAdapter(
+                  child: Padding(padding: EdgeInsets.symmetric(vertical: 50),
+                    child: Center(child: Text('No data yet.', style: TextStyle(color: AppColors.muted)))))
               : SliverPadding(
                   padding: const EdgeInsets.all(16),
                   sliver: SliverGrid(
