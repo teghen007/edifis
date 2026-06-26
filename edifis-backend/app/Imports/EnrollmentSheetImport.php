@@ -25,13 +25,30 @@ class EnrollmentSheetImport implements ToCollection
 
     public function collection(Collection $rows): void
     {
-        // Row 1 (index 0): meta — col B holds the stream id.
-        $this->streamId = trim((string) ($rows[0][1] ?? ''));
+        // Locate by content: stream id (meta_stream_id), the human header row
+        // (contains "Student ID"), the machine header (next row, subject ids),
+        // and the first data row.
+        $headerRow = null;
+        for ($i = 0; $i < $rows->count(); $i++) {
+            foreach ($rows[$i] as $col => $val) {
+                $cell = trim((string) $val);
+                if ($cell === 'meta_stream_id') {
+                    $this->streamId = trim((string) ($rows[$i][(int) $col + 1] ?? ''));
+                }
+                if ($cell === 'Student ID') {
+                    $headerRow = $i;
+                }
+            }
+            if ($this->streamId !== '' && $headerRow !== null) {
+                break;
+            }
+        }
 
-        // Row 3 (index 2): machine header — subject ids from column index 2 onward.
-        $machine = $rows[2] ?? collect();
+        // Machine header is the row right after the human header; subject ids in col >= 3.
+        $machineIdx = $headerRow !== null ? $headerRow + 1 : 4;
+        $machine = $rows[$machineIdx] ?? collect();
         foreach ($machine as $col => $val) {
-            if ((int) $col >= 2 && trim((string) $val) !== '') {
+            if ((int) $col >= 3 && trim((string) $val) !== '') {
                 $this->subjectCols[(int) $col] = trim((string) $val);
             }
         }
@@ -44,10 +61,10 @@ class EnrollmentSheetImport implements ToCollection
         $added = 0;
         $removed = 0;
 
-        // Data rows from index 3.
-        for ($i = 3; $i < $rows->count(); $i++) {
+        // Data rows start after the machine header.
+        for ($i = $machineIdx + 1; $i < $rows->count(); $i++) {
             $row = $rows[$i];
-            $studentId = trim((string) ($row[0] ?? ''));
+            $studentId = trim((string) ($row[1] ?? ''));   // Student ID column
             if ($studentId === '') {
                 continue;
             }

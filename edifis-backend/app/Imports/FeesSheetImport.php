@@ -13,12 +13,14 @@ use Ramsey\Uuid\Uuid;
  * Reads the worksheet produced by {@see \App\Exports\FeesSheetExport} and posts
  * ledger entries: positive "Charge" amounts as debits, "Payment" amounts as credits.
  *
- * Column layout (0-indexed): 0=id, 1=name, 2=class, 3=balance, 4=charge, 5=payment.
+ * Column layout (0-indexed): 0=S/N, 1=Student ID, 2=name, 3=class, 4=balance, 5=charge, 6=payment.
+ * Header row + data start are located by content (robust to title/styling rows).
  */
 class FeesSheetImport implements \Maatwebsite\Excel\Concerns\ToCollection
 {
-    private const CHARGE_COL = 4;
-    private const PAYMENT_COL = 5;
+    private const ID_COL = 1;
+    private const CHARGE_COL = 5;
+    private const PAYMENT_COL = 6;
 
     private array $result = [
         'charged_count' => 0,
@@ -32,10 +34,11 @@ class FeesSheetImport implements \Maatwebsite\Excel\Concerns\ToCollection
     {
         $ledger = app(PostLedgerDebit::class);
 
-        // Data starts at row index 2 (after meta + header).
-        for ($i = 2; $i < $rows->count(); $i++) {
+        $start = $this->dataStartRow($rows);
+
+        for ($i = $start; $i < $rows->count(); $i++) {
             $row = $rows[$i];
-            $studentId = trim((string) ($row[0] ?? ''));
+            $studentId = trim((string) ($row[self::ID_COL] ?? ''));
             if ($studentId === '') {
                 continue;
             }
@@ -69,6 +72,20 @@ class FeesSheetImport implements \Maatwebsite\Excel\Concerns\ToCollection
                 $this->result['collected_total'] += $payment;
             }
         }
+    }
+
+    /** First data row index = the row after the header (the one containing "Student ID"). */
+    private function dataStartRow(Collection $rows): int
+    {
+        for ($i = 0; $i < $rows->count(); $i++) {
+            foreach ($rows[$i] as $cell) {
+                if (trim((string) $cell) === 'Student ID') {
+                    return $i + 1;
+                }
+            }
+        }
+
+        return 4; // default: header on row 4 (index 3), data from index 4
     }
 
     /**
