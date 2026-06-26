@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class OutstandingByClass extends ChartWidget
 {
-    protected static ?string $heading = 'Outstanding fees by class';
+    protected static ?string $heading = 'Top outstanding balances';
     protected static ?int $sort = 0;
     protected static bool $isLazy = false;
     protected int|string|array $columnSpan = 1;
@@ -21,25 +21,30 @@ class OutstandingByClass extends ChartWidget
 
     protected function getData(): array
     {
-        $rows = DB::table('ledger_entries')
-            ->join('students', 'ledger_entries.student_id', '=', 'students.id')
-            ->join('school_classes', 'students.current_class_id', '=', 'school_classes.id')
-            ->select('school_classes.name', DB::raw('SUM(ledger_entries.amount) as bal'))
-            ->groupBy('school_classes.name')
+        $balances = DB::table('ledger_entries')
+            ->select('student_id', DB::raw('SUM(amount) as bal'))
+            ->groupBy('student_id')
             ->get()
-            ->map(fn ($r) => ['name' => $r->name, 'amount' => max(0, (int) $r->bal)])
-            ->filter(fn ($r) => $r['amount'] > 0)
-            ->sortByDesc('amount')
-            ->values();
+            ->filter(fn ($b) => (int) $b->bal > 0)
+            ->sortByDesc('bal')
+            ->take(8);
+
+        $labels = [];
+        $data = [];
+        foreach ($balances as $b) {
+            $s = DB::table('students')->where('id', $b->student_id)->first();
+            $labels[] = trim(($s->given_name ?? '') . ' ' . ($s->family_name ?? ''));
+            $data[] = (int) $b->bal;
+        }
 
         return [
             'datasets' => [[
-                'label' => 'Outstanding (XAF)',
-                'data' => $rows->pluck('amount')->all(),
+                'label' => 'Owed (XAF)',
+                'data' => $data,
                 'backgroundColor' => '#2563EB',
                 'borderRadius' => 6,
             ]],
-            'labels' => $rows->pluck('name')->all(),
+            'labels' => $labels,
         ];
     }
 

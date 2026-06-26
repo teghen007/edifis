@@ -46,6 +46,12 @@ class StaffHomeScreen extends ConsumerWidget {
     }
     if (role == 'bursar' || role == 'principal') {
       buttons.add(FloatingActionButton.small(
+        heroTag: 'fees-overview',
+        tooltip: 'Fees overview — charts & top debtors',
+        backgroundColor: AppColors.blue700,
+        onPressed: () => context.push('/fees-overview'),
+        child: const Icon(LucideIcons.chartPie, color: Colors.white)));
+      buttons.add(FloatingActionButton.small(
         heroTag: 'fees',
         tooltip: 'Fees sheet — charge or record payments (Excel)',
         backgroundColor: AppColors.blue300,
