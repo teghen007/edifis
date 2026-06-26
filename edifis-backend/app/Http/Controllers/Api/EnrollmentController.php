@@ -32,8 +32,17 @@ class EnrollmentController
         $import = new EnrollmentSheetImport;
         $rows = Excel::toCollection($import, $request->file('file'))->first();
 
-        $streamId = trim((string) ($rows[0][1] ?? ''));
-        abort_if($streamId === '', 422, 'Could not read the stream from this file.');
+        // Find the stream id by content (label "meta_stream_id" + the next cell).
+        $streamId = '';
+        foreach ($rows as $row) {
+            foreach ($row as $col => $val) {
+                if (trim((string) $val) === 'meta_stream_id') {
+                    $streamId = trim((string) ($row[(int) $col + 1] ?? ''));
+                    break 2;
+                }
+            }
+        }
+        abort_if($streamId === '', 422, 'Could not read the stream from this file. Please download a fresh sheet.');
         $this->authorizeStream($user, $streamId);
 
         $import->collection($rows);
