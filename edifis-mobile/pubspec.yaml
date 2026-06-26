@@ -15,7 +15,6 @@ dependencies:
   dio: ^5.4.0
   json_annotation: ^4.9.0
   go_router: ^14.0.0
-  mobile_scanner: ^5.0.0
   signature: ^5.4.0
   uuid: ^4.4.0
   connectivity_plus: ^6.0.0
