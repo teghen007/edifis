@@ -33,74 +33,52 @@ class StaffHomeScreen extends ConsumerWidget {
     }
   }
 
-  Widget? _buildFab(BuildContext context, String role) {
-    final buttons = <Widget>[];
-
+  /// Role-aware circular quick-action shortcuts shown near the top of the dashboard.
+  List<Widget> _actionsFor(BuildContext c, String role) {
+    final a = <Widget>[];
     if (role == 'principal' || role == 'vice_principal') {
-      buttons.add(FloatingActionButton.small(
-        heroTag: 'vacuum',
-        tooltip: 'Ask EDIFIS AI about your school',
-        backgroundColor: AppColors.gold,
-        onPressed: () => context.push('/vacuum'),
-        child: const Icon(LucideIcons.sparkles, color: Colors.white)));
+      a.add(_qa(c, LucideIcons.sparkles, 'Ask AI', AppColors.gold, '/vacuum'));
+      a.add(_qa(c, LucideIcons.award, 'Results', AppColors.blue700, '/results'));
     }
     if (role == 'bursar' || role == 'principal') {
-      buttons.add(FloatingActionButton.small(
-        heroTag: 'fees-overview',
-        tooltip: 'Fees overview — charts & top debtors',
-        backgroundColor: AppColors.blue700,
-        onPressed: () => context.push('/fees-overview'),
-        child: const Icon(LucideIcons.chartPie, color: Colors.white)));
-      buttons.add(FloatingActionButton.small(
-        heroTag: 'fees',
-        tooltip: 'Fees sheet — charge or record payments (Excel)',
-        backgroundColor: AppColors.blue300,
-        onPressed: () => context.push('/fees-excel'),
-        child: const Icon(LucideIcons.wallet, color: Colors.white)));
+      a.add(_qa(c, LucideIcons.chartPie, 'Fees', AppColors.blue600, '/fees-overview'));
+      a.add(_qa(c, LucideIcons.wallet, 'Fees sheet', AppColors.blue400, '/fees-excel'));
     }
     if (role == 'class_master' || role == 'principal') {
-      buttons.add(FloatingActionButton.small(
-        heroTag: 'enroll',
-        tooltip: 'Subject enrolment — which student takes which subject (Excel)',
-        backgroundColor: AppColors.blue400,
-        onPressed: () => context.push('/enrollment-excel'),
-        child: const Icon(LucideIcons.userCheck, color: Colors.white)));
+      a.add(_qa(c, LucideIcons.userCheck, 'Enrolment', AppColors.blue500, '/enrollment-excel'));
     }
     if (role == 'discipline_master' || role == 'principal') {
-      buttons.add(FloatingActionButton.small(
-        heroTag: 'conduct',
-        tooltip: 'Record student conduct for the term',
-        backgroundColor: AppColors.blue300,
-        onPressed: () => context.push('/conduct'),
-        child: const Icon(LucideIcons.shieldAlert, color: Colors.white)));
+      a.add(_qa(c, LucideIcons.shieldAlert, 'Conduct', AppColors.blue400, '/conduct'));
     }
     if (['subject_teacher', 'class_master', 'principal'].contains(role)) {
-      buttons.add(FloatingActionButton.small(
-        heroTag: 'excel',
-        tooltip: 'Mark sheet — download, fill marks, upload (Excel)',
-        backgroundColor: AppColors.blue500,
-        onPressed: () => context.push('/marks-excel'),
-        child: const Icon(LucideIcons.fileSpreadsheet, color: Colors.white)));
-      buttons.add(FloatingActionButton.extended(
-        heroTag: 'mark',
-        tooltip: 'Record a single mark quickly',
-        backgroundColor: AppColors.blue600,
-        icon: const Icon(LucideIcons.plus, color: Colors.white),
-        label: const Text('Record mark', style: TextStyle(color: Colors.white)),
-        onPressed: () => context.push('/submit-mark')));
+      a.add(_qa(c, LucideIcons.fileSpreadsheet, 'Mark sheet', AppColors.blue500, '/marks-excel'));
+      a.add(_qa(c, LucideIcons.plus, 'Record mark', AppColors.blue600, '/submit-mark'));
     }
+    if (['principal', 'vice_principal', 'class_master', 'subject_teacher'].contains(role)) {
+      a.add(_qa(c, LucideIcons.calendarCheck, 'Attendance', AppColors.blue400, '/take-attendance'));
+    }
+    return a;
+  }
 
-    if (buttons.isEmpty) return null;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          buttons[i],
-          if (i < buttons.length - 1) const SizedBox(height: 8),
-        ],
-      ],
+  Widget _qa(BuildContext c, IconData icon, String label, Color color, String route) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 14),
+      child: GestureDetector(
+        onTap: () => c.push(route),
+        child: SizedBox(width: 66, child: Column(children: [
+          Container(
+            width: 56, height: 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: [color, Color.lerp(color, Colors.white, .28)!]),
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: color.withValues(alpha: .35), blurRadius: 12, offset: const Offset(0, 5))]),
+            child: Icon(icon, color: Colors.white, size: 23)),
+          const SizedBox(height: 7),
+          Text(label, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11.5, color: AppColors.ink, height: 1.1)),
+        ])),
+      ),
     );
   }
 
@@ -110,9 +88,6 @@ class StaffHomeScreen extends ConsumerWidget {
     final summary = ref.watch(dashboardSummaryProvider);
 
     return Scaffold(
-      floatingActionButton: me.maybeWhen(
-        data: (m) => _buildFab(context, m.role),
-        orElse: () => null),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(meProvider);
@@ -159,6 +134,20 @@ class StaffHomeScreen extends ConsumerWidget {
               ]),
             ),
           ),
+          me.maybeWhen(
+            data: (m) {
+              final actions = _actionsFor(context, m.role);
+              if (actions.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+              return SliverToBoxAdapter(child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 0, 2),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Padding(padding: EdgeInsets.only(right: 16),
+                    child: Text('Quick actions', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.ink, fontSize: 15))),
+                  const SizedBox(height: 14),
+                  SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: actions)),
+                ])).animate().fadeIn(duration: 350.ms, delay: 120.ms));
+            },
+            orElse: () => const SliverToBoxAdapter(child: SizedBox.shrink())),
           summary.when(
             loading: () => const SliverFillRemaining(
               hasScrollBody: false,

@@ -8,7 +8,6 @@ import '../../core/services/dashboard_api.dart';
 import '../../core/services/parent_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
-import '../../shared/widgets/glossy_button.dart';
 import '../../core/services/school_api.dart';
 
 class ParentDashboardScreen extends ConsumerStatefulWidget {
@@ -148,27 +147,16 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                           const SizedBox(width: 14),
                           const Expanded(child: SizedBox.shrink()),
                         ]),
-                        const SizedBox(height: 14),
-                        GlossyButton(
-                          label: 'Ask EDIFIS AI',
-                          icon: LucideIcons.sparkles,
-                          onTap: () => context.push('/parent-ask'),
-                        ),
-                        const SizedBox(height: 10),
-                        GlossyButton(
-                          label: 'View Report Card',
-                          icon: Icons.article,
-                          onTap: () => context.push('/report-card',
-                            extra: {'id': _selectedId, 'name': selected['name'] ?? ''}),
-                        ),
-                        const SizedBox(height: 10),
-                        GlossyButton(
-                          label: 'Fee Statement',
-                          icon: LucideIcons.receipt,
-                          onTap: () => context.push('/fees-statement',
-                            extra: {'id': _selectedId, 'name': selected['name'] ?? ''}),
-                        ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 20),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                          _qa(LucideIcons.sparkles, 'Ask AI', AppColors.gold,
+                            () => context.push('/parent-ask')),
+                          _qa(LucideIcons.fileText, 'Report Card', AppColors.blue600,
+                            () => context.push('/report-card', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
+                          _qa(LucideIcons.receipt, 'Fee Statement', AppColors.blue400,
+                            () => context.push('/fees-statement', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
+                        ]),
+                        const SizedBox(height: 16),
                         if (r['marks'] is List && (r['marks'] as List).isNotEmpty)
                           ...((r['marks'] as List).take(8).map((m) => _markRow(m))),
                       ]);
@@ -180,6 +168,25 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
           ),
         ]),
       ),
+    );
+  }
+
+  Widget _qa(IconData icon, String label, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(width: 96, child: Column(children: [
+        Container(
+          width: 58, height: 58,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
+              colors: [color, Color.lerp(color, Colors.white, .28)!]),
+            shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: color.withValues(alpha: .35), blurRadius: 12, offset: const Offset(0, 5))]),
+          child: Icon(icon, color: Colors.white, size: 24)),
+        const SizedBox(height: 7),
+        Text(label, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 11.5, color: AppColors.ink, height: 1.1)),
+      ])),
     );
   }
 
