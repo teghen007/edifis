@@ -6,6 +6,7 @@ namespace App\Domain\Academics\Actions;
 
 use App\Domain\Academics\Models\Mark;
 use App\Domain\Audit\Services\AuditLogger;
+use Illuminate\Support\Facades\DB;
 
 class RecordMark
 {
@@ -39,7 +40,7 @@ class RecordMark
                 'revision_parent' => $revisionParent,
                 'score' => $score,
                 'max_score' => $maxScore,
-                'coefficient' => $coefficient,
+                'coefficient' => $this->resolveCoefficient($coefficient, $existing->class_id, $existing->subject_id),
                 'recorded_at' => now(),
                 'published' => $published,
                 'synced_time' => $syncedTime,
@@ -57,7 +58,7 @@ class RecordMark
                 'owner_teacher_id' => $ownerTeacherId,
                 'score' => $score,
                 'max_score' => $maxScore,
-                'coefficient' => $coefficient,
+                'coefficient' => $this->resolveCoefficient($coefficient, $classId, $subjectId),
                 'recorded_at' => now(),
                 'published' => $published,
                 'synced_time' => $syncedTime,
@@ -86,5 +87,36 @@ class RecordMark
         }
 
         return $mark;
+    }
+
+    /**
+     * The weighting that report cards use. Prefer an explicit value, else the
+     * class-specific coefficient (class_subject), else the subject's base
+     * coefficient, else 1.
+     */
+    private function resolveCoefficient(?float $coefficient, ?string $classId, ?string $subjectId): float
+    {
+        if ($coefficient !== null) {
+            return $coefficient;
+        }
+
+        if ($classId && $subjectId) {
+            $classCoef = DB::table('class_subject')
+                ->where('class_id', $classId)
+                ->where('subject_id', $subjectId)
+                ->value('coefficient');
+            if ($classCoef !== null) {
+                return (float) $classCoef;
+            }
+        }
+
+        if ($subjectId) {
+            $subjectCoef = DB::table('subjects')->where('id', $subjectId)->value('coefficient');
+            if ($subjectCoef !== null) {
+                return (float) $subjectCoef;
+            }
+        }
+
+        return 1.0;
     }
 }
