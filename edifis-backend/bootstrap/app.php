@@ -48,6 +48,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 422);
             }
 
+            // No / invalid token: return a clean 401 so clients can re-login,
+            // instead of falling through to the generic 500 below. (This custom
+            // renderer shadows Laravel's built-in unauthenticated() handler.)
+            if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                return response()->json([
+                    'code' => 'unauthenticated',
+                    'message' => 'Unauthenticated.',
+                    'details' => null,
+                    'retry_after_seconds' => null,
+                ], 401);
+            }
+
             if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
                 $statusCode = $e->getStatusCode();
                 $code = match ($statusCode) {
