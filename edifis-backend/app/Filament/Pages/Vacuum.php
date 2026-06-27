@@ -43,6 +43,12 @@ class Vacuum extends Page
         return 'VACUUM — Principal Command Centre';
     }
 
+    /** Register both forms so Filament initialises them (else the page 500s on render). */
+    protected function getForms(): array
+    {
+        return ['queryForm', 'commandForm'];
+    }
+
     public function queryForm(Form $form): Form
     {
         return $form->schema([
@@ -50,7 +56,7 @@ class Vacuum extends Page
                 ->label('Ask the AI Co-pilot')
                 ->placeholder('e.g. "Who is borderline for promotion in Form 4?"')
                 ->required(),
-        ])->statePath('queryData');
+        ]);
     }
 
     public function commandForm(Form $form): Form
@@ -83,7 +89,7 @@ class Vacuum extends Page
                 ->label('I confirm this command')
                 ->helperText('Required for deactivate_account and bulk commands.')
                 ->default(false),
-        ])->statePath('commandData');
+        ]);
     }
 
     public function submitQuery(): void
