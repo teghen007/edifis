@@ -52,15 +52,38 @@ class ParentPortalController
             ->where('published', true)
             ->get();
 
-        $total = $marks->sum('score');
-        $max = $marks->sum('max_score');
-        $avg = $max > 0 ? round(($total / $max) * 20, 2) : 0;
+        // Coefficient-weighted average out of 20 — matches the official term_results,
+        // unlike a raw score/max ratio which ignores subject weighting.
+        $weighted = 0.0;
+        $coefSum = 0.0;
+        foreach ($marks as $m) {
+            if ($m->max_score > 0 && $m->coefficient > 0) {
+                $weighted += ($m->score / $m->max_score) * 20 * $m->coefficient;
+                $coefSum += $m->coefficient;
+            }
+        }
+        $avg = $coefSum > 0 ? round($weighted / $coefSum, 2) : 0;
+
+        // The school's official computed result per term (what report cards show).
+        $terms = \Illuminate\Support\Facades\DB::table('term_results')
+            ->join('terms', 'term_results.term_id', '=', 'terms.id')
+            ->where('term_results.student_id', $studentId)
+            ->orderBy('terms.position')
+            ->selectRaw('terms.name as term, term_results.overall_average as average, term_results.grade as grade, term_results.position as rank')
+            ->get()
+            ->map(fn ($r) => [
+                'term' => $r->term,
+                'average' => (float) $r->average,
+                'grade' => $r->grade,
+                'rank' => (int) $r->rank,
+            ]);
 
         return response()->json([
             'marks' => $marks,
             'average' => $avg,
-            'total_score' => $total,
-            'total_max' => $max,
+            'total_score' => $marks->sum('score'),
+            'total_max' => $marks->sum('max_score'),
+            'terms' => $terms,
         ]);
     }
 
@@ -111,11 +134,25 @@ class ParentPortalController
     {
         abort_unless($request->user()->ownsStudent($studentId), 403, 'Not your child.');
 
-        $events = AttendanceEvent::where('student_id', $studentId)
-            ->where('status', 'present')
-            ->count();
+        $counts = AttendanceEvent::where('student_id', $studentId)
+            ->whereIn('status', ['present', 'absent', 'late', 'excused'])
+            ->selectRaw('status, count(*) as n')
+            ->groupBy('status')
+            ->pluck('n', 'status');
 
-        return response()->json(['attendance_events' => $events]);
+        $present = (int) ($counts['present'] ?? 0);
+        $total = (int) $counts->sum();
+        $rate = $total > 0 ? (int) round($present / $total * 100) : null;
+
+        return response()->json([
+            'present' => $present,
+            'absent' => (int) ($counts['absent'] ?? 0),
+            'late' => (int) ($counts['late'] ?? 0),
+            'excused' => (int) ($counts['excused'] ?? 0),
+            'total' => $total,
+            'rate' => $rate,
+            'attendance_events' => $present, // backward-compatible
+        ]);
     }
 
     public function calendar(): JsonResponse
