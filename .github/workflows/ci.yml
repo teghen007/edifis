@@ -14,6 +14,16 @@ jobs:
   backend:
     name: Backend (Laravel)
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: edifis_test
+      DB_USERNAME: edifis
+      DB_PASSWORD: secret
+      CACHE_STORE: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
     defaults:
       run:
         working-directory: edifis-backend
@@ -49,6 +59,11 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Prepare test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
       # --- Informational (promote to gates once the baseline is clean) ---
       - name: Pint (code style)
         continue-on-error: true
@@ -58,22 +73,13 @@ jobs:
         continue-on-error: true
         run: vendor/bin/phpstan analyse --no-progress || true
 
-      - name: Pest (tests)
+      # --- Hard gate: every panel page must render (no 5xx) ---
+      - name: Panel render smoke test
+        run: vendor/bin/pest tests/Feature/Web/PanelRenderSmokeTest.php
+
+      - name: Pest (full suite)
         continue-on-error: true
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: edifis_test
-          DB_USERNAME: edifis
-          DB_PASSWORD: secret
-          CACHE_STORE: array
-          QUEUE_CONNECTION: sync
-          SESSION_DRIVER: array
-        run: |
-          cp .env.example .env
-          php artisan key:generate
-          vendor/bin/pest
+        run: vendor/bin/pest
 
   mobile:
     name: Mobile (Flutter)
