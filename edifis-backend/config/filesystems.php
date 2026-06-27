@@ -15,5 +15,11 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        // Persistent DB backups (bind-mounted to /opt/edifis/backups on the host).
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('app/backups'),
+            'throw' => false,
+        ],
     ],
 ];
