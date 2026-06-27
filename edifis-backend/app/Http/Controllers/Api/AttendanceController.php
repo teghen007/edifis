@@ -22,7 +22,10 @@ use Illuminate\Support\Facades\DB;
 
 class AttendanceController
 {
-    /** Sections (streams) the user can take attendance for, in the current year. */
+    /** Sentinel "section" id for the all-boarders dorm/night roll call. */
+    private const BOARDERS = '__boarders__';
+
+    /** Sections (streams) the user can take attendance for, plus the boarders group. */
     public function sections(): JsonResponse
     {
         $year = AcademicYear::where('is_current', true)->first();
@@ -39,29 +42,37 @@ class AttendanceController
                 'class' => $s->schoolClass?->name,
             ]);
 
-        return response()->json($streams);
+        // Virtual group: all boarders, for the dorm/night roll call.
+        $boarders = [[
+            'id' => self::BOARDERS,
+            'name' => 'Boarders — night roll call',
+            'class' => 'Boarding',
+        ]];
+
+        return response()->json(array_merge($boarders, $streams->all()));
     }
 
     /** The roll-call sheet: roster + any marks already recorded for that day/period. */
     public function rollCallSheet(Request $request): JsonResponse
     {
         $v = $request->validate([
-            'stream_id' => ['required', 'uuid'],
+            'stream_id' => ['required', 'string'],
             'date' => ['required', 'date'],
             'period' => ['nullable', 'in:AM,PM,FULL'],
         ]);
         $period = $v['period'] ?? 'FULL';
+        $boarding = $v['stream_id'] === self::BOARDERS;
 
-        $session = AttendanceSession::where([
-            'stream_id' => $v['stream_id'],
-            'attendance_date' => $v['date'],
-            'period' => $period,
-            'mode' => 'rollcall',
-        ])->first();
+        $session = AttendanceSession::where($boarding
+            ? ['attendance_date' => $v['date'], 'period' => $period, 'mode' => 'boarding']
+            : ['stream_id' => $v['stream_id'], 'attendance_date' => $v['date'], 'period' => $period, 'mode' => 'rollcall']
+        )->first();
 
         $existing = $session ? $session->events()->get()->keyBy('student_id') : collect();
 
-        $students = Student::where('stream_id', $v['stream_id'])
+        $students = ($boarding
+            ? Student::where('boarding_status', 'boarding')
+            : Student::where('stream_id', $v['stream_id']))
             ->where('active', true)
             ->orderBy('family_name')->orderBy('given_name')
             ->get(['id', 'given_name', 'family_name'])
@@ -83,7 +94,7 @@ class AttendanceController
     public function rollCall(Request $request, RecordRollCall $action): JsonResponse
     {
         $v = $request->validate([
-            'stream_id' => ['required', 'uuid'],
+            'stream_id' => ['required', 'string'],
             'date' => ['required', 'date'],
             'period' => ['nullable', 'in:AM,PM,FULL'],
             'entries' => ['required', 'array', 'min:1'],

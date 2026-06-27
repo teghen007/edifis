@@ -69,6 +69,11 @@ class StudentResource extends Resource
                 Tables\Columns\TextColumn::make('given_name')->searchable(),
                 Tables\Columns\TextColumn::make('family_name')->searchable(),
                 Tables\Columns\TextColumn::make('sex'),
+                Tables\Columns\TextColumn::make('boarding_status')
+                    ->label('Boarding')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => $state === 'boarding' ? 'Boarder' : 'Day')
+                    ->color(fn ($state) => $state === 'boarding' ? 'warning' : 'gray'),
                 Tables\Columns\TextColumn::make('enrolled_at')->dateTime(),
                 Tables\Columns\IconColumn::make('active')->boolean(),
             ])
@@ -76,6 +81,9 @@ class StudentResource extends Resource
                 Tables\Filters\SelectFilter::make('current_class_id')
                     ->label('Class')
                     ->options(fn () => \App\Domain\Academics\Models\SchoolClass::orderBy('level')->pluck('name', 'id')),
+                Tables\Filters\SelectFilter::make('boarding_status')
+                    ->label('Boarding')
+                    ->options(['day' => 'Day students', 'boarding' => 'Boarders']),
                 Tables\Filters\SelectFilter::make('sex')
                     ->options(['M' => 'Male', 'F' => 'Female']),
                 Tables\Filters\TernaryFilter::make('active')->default(true),
@@ -83,6 +91,18 @@ class StudentResource extends Resource
             ->defaultSort('family_name')
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('idCard')
+                    ->label('ID Card')
+                    ->icon('heroicon-o-identification')
+                    ->color('gray')
+                    ->action(function (Student $record) {
+                        $pdf = app(\App\Domain\Students\Support\IdCardRenderer::class)->render($record);
+
+                        return response()->streamDownload(
+                            fn () => print($pdf->output()),
+                            'id-card-' . ($record->master_pea_id ?: $record->id) . '.pdf',
+                        );
+                    }),
             ])
             ->bulkActions([]);
     }

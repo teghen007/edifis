@@ -23,15 +23,17 @@ class RecordRollCall
     {
         $this->newlyAbsent = [];
 
-        return DB::transaction(function () use ($streamId, $date, $period, $teacherId, $entries) {
-            $stream = DB::table('streams')->where('id', $streamId)->first();
+        $boarding = $streamId === '__boarders__';
 
-            $session = AttendanceSession::firstOrNew([
-                'stream_id' => $streamId,
-                'attendance_date' => $date,
-                'period' => $period,
-                'mode' => 'rollcall',
-            ]);
+        return DB::transaction(function () use ($streamId, $date, $period, $teacherId, $entries, $boarding) {
+            $stream = $boarding ? null : DB::table('streams')->where('id', $streamId)->first();
+
+            $session = AttendanceSession::firstOrNew($boarding
+                ? ['attendance_date' => $date, 'period' => $period, 'mode' => 'boarding']
+                : ['stream_id' => $streamId, 'attendance_date' => $date, 'period' => $period, 'mode' => 'rollcall']
+            );
+            $session->stream_id = $boarding ? null : $streamId;
+            $session->mode = $boarding ? 'boarding' : 'rollcall';
             $session->class_id = $stream?->class_id;
             $session->teacher_id = $teacherId;
             $session->status = 'closed';
