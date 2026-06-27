@@ -65,6 +65,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/students', [StudentController::class, 'index'])
         ->middleware('role:principal|vice_principal|secretary|bursar|class_master|subject_teacher|discipline_master')
         ->name('students.index');
+    Route::get('/students/{studentId}/id-card', [\App\Http\Controllers\Api\IdCardController::class, 'show'])
+        ->middleware('role:principal|vice_principal|secretary|bursar|class_master|school_admin')
+        ->name('students.id-card');
     Route::get('/classes', [\App\Http\Controllers\Api\SchoolClassController::class, 'index'])
         ->name('classes.index');
     Route::get('/subjects', [\App\Http\Controllers\Api\SubjectController::class, 'index'])
