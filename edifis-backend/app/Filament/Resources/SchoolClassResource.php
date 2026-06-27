@@ -42,6 +42,13 @@ class SchoolClassResource extends Resource
             ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            SchoolClassResource\RelationManagers\ClassSubjectsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [

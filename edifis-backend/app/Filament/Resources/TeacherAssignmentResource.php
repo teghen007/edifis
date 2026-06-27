@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Domain\Academics\Models\ClassSubject;
 use App\Domain\Academics\Models\Stream;
-use App\Domain\Academics\Models\Subject;
 use App\Domain\Academics\Models\TeacherAssignment;
 use App\Filament\Resources\TeacherAssignmentResource\Pages;
 use App\Models\User;
@@ -35,14 +35,27 @@ class TeacherAssignmentResource extends Resource
                 ->options(User::whereHas('roles', fn ($q) => $q->whereIn('name', $staffRoles))->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
+            Forms\Components\Select::make('stream_id')
+                ->label('Class section')
+                ->options(Stream::with('schoolClass')->get()->mapWithKeys(fn ($s) => [$s->id => $s->name . ' (' . ($s->schoolClass?->name ?? '') . ')']))
+                ->searchable()
+                ->required()
+                ->live()
+                ->afterStateUpdated(fn (Forms\Set $set) => $set('subject_id', null)),
             Forms\Components\Select::make('subject_id')
                 ->label('Subject')
-                ->options(Subject::pluck('name', 'id'))
-                ->searchable()
-                ->required(),
-            Forms\Components\Select::make('stream_id')
-                ->label('Stream')
-                ->options(Stream::with('schoolClass')->get()->mapWithKeys(fn ($s) => [$s->id => $s->name . ' (' . ($s->schoolClass?->name ?? '') . ')']))
+                ->helperText('Only the subjects this section offers.')
+                ->options(function (Forms\Get $get) {
+                    $stream = Stream::find($get('stream_id'));
+                    if (! $stream) {
+                        return [];
+                    }
+
+                    return ClassSubject::where('class_id', $stream->class_id)
+                        ->with('subject')
+                        ->get()
+                        ->mapWithKeys(fn ($cs) => [$cs->subject_id => $cs->code . ' — ' . ($cs->subject?->name ?? '')]);
+                })
                 ->searchable()
                 ->required(),
         ]);
