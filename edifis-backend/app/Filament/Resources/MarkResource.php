@@ -53,7 +53,10 @@ class MarkResource extends Resource
             ->filters([
                 Tables\Filters\TernaryFilter::make('published'),
                 Tables\Filters\SelectFilter::make('sequence')
-                    ->options([1 => 'Seq 1', 2 => 'Seq 2', 3 => 'Seq 3', 4 => 'Seq 4', 5 => 'Seq 5', 6 => 'Seq 6']),
+                    ->options([
+                        'Sequence 1' => 'Sequence 1', 'Sequence 2' => 'Sequence 2', 'Sequence 3' => 'Sequence 3',
+                        'Sequence 4' => 'Sequence 4', 'Sequence 5' => 'Sequence 5', 'Sequence 6' => 'Sequence 6',
+                    ]),
                 Tables\Filters\SelectFilter::make('subject_id')
                     ->label('Subject')
                     ->options(fn () => \App\Domain\Academics\Models\Subject::orderBy('name')->pluck('name', 'id')),
