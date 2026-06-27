@@ -33,6 +33,7 @@ class StudentController
     public function index(Request $request): JsonResponse
     {
         $students = Student::where('active', true)
+            ->with('media')
             ->orderBy('family_name')
             ->orderBy('given_name')
             ->get()
@@ -42,6 +43,7 @@ class StudentController
                 'class_name' => optional($s->schoolClass)->name ?? '',
                 'class_id'   => $s->class_id,
                 'active'     => (bool) $s->active,
+                'photo_url'  => $s->getFirstMediaUrl('photo') ?: null,
             ]);
 
         return response()->json($students);

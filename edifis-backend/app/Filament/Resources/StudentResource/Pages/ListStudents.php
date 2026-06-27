@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StudentResource\Pages;
 
+use App\Domain\Students\Support\BulkPhotoMatcher;
 use App\Exports\StudentAdmissionTemplate;
 use App\Filament\Resources\StudentResource;
 use App\Imports\StudentAdmissionImport;
@@ -53,6 +54,41 @@ class ListStudents extends ListRecords
                         ->title('Admission import complete')
                         ->body($body)
                         ->color(empty($r['errors']) ? 'success' : 'warning')
+                        ->success()
+                        ->persistent()
+                        ->send();
+
+                    $this->resetTable();
+                }),
+
+            Actions\Action::make('bulkPhotos')
+                ->label('Bulk photos')
+                ->icon('heroicon-o-photo')
+                ->color('gray')
+                ->modalDescription('Upload a .zip of images named by PEA ID, student ID, or "Family Given" name. Each matched photo replaces that student\'s current one.')
+                ->form([
+                    FileUpload::make('zip')
+                        ->label('Photos (.zip)')
+                        ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed'])
+                        ->storeFiles(false)
+                        ->required(),
+                ])
+                ->action(function (array $data) {
+                    $r = app(BulkPhotoMatcher::class)->fromZip($data['zip']->getRealPath());
+
+                    $body = "{$r['matched']} photos matched.";
+                    if (! empty($r['ambiguous'])) {
+                        $body .= ' Ambiguous (skipped): ' . implode(', ', array_slice($r['ambiguous'], 0, 8)) . '.';
+                    }
+                    if (! empty($r['unmatched'])) {
+                        $body .= ' No match: ' . implode(', ', array_slice($r['unmatched'], 0, 8)) . '.';
+                    }
+
+                    $clean = empty($r['unmatched']) && empty($r['ambiguous']);
+                    Notification::make()
+                        ->title('Bulk photos complete')
+                        ->body($body)
+                        ->color($clean ? 'success' : 'warning')
                         ->success()
                         ->persistent()
                         ->send();

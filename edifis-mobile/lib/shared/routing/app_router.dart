@@ -12,6 +12,7 @@ import '../../features/parent/parent_dashboard_screen.dart';
 import '../../features/staff/staff_home_screen.dart';
 
 import '../../features/staff/students_screen.dart';
+import '../../features/staff/photo_day_screen.dart';
 import '../../features/staff/submit_mark_screen.dart';
 import '../../features/staff/fees_screen.dart';
 import '../../features/staff/take_attendance_screen.dart';
@@ -60,6 +61,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/discipline_master', builder: (c, s) => const StaffHomeScreen(roleName: 'Discipline Master')),
       GoRoute(path: '/secretary', builder: (c, s) => const StaffHomeScreen(roleName: 'Secretary')),
       GoRoute(path: '/students', builder: (c, s) => const StudentsScreen()),
+      GoRoute(path: '/photo-day', builder: (c, s) => const PhotoDayScreen()),
       GoRoute(path: '/submit-mark', builder: (c, s) => const SubmitMarkScreen()),
       GoRoute(path: '/fees', builder: (c, s) => const FeesScreen()),
       GoRoute(path: '/take-attendance', builder: (c, s) => const TakeAttendanceScreen()),

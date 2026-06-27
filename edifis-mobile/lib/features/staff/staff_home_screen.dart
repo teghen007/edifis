@@ -49,6 +49,9 @@ class StaffHomeScreen extends ConsumerWidget {
     if (role == 'class_master' || role == 'principal') {
       a.add(_qa(c, LucideIcons.userCheck, 'Enrolment', AppColors.blue500, '/enrollment-excel'));
     }
+    if (['secretary', 'principal', 'vice_principal', 'class_master'].contains(role)) {
+      a.add(_qa(c, LucideIcons.camera, 'Photo Day', AppColors.blue600, '/photo-day'));
+    }
     if (role == 'discipline_master' || role == 'principal') {
       a.add(_qa(c, LucideIcons.shieldAlert, 'Conduct', AppColors.blue400, '/conduct'));
     }
