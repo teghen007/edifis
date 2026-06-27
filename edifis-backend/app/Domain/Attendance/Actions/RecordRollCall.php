@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
 
 class RecordRollCall
 {
+    /** Student ids that flipped to absent on this submit (for parent alerts). */
+    public array $newlyAbsent = [];
+
     /**
      * Record (or update) a daily roll call for a section.
      *
@@ -18,6 +21,8 @@ class RecordRollCall
      */
     public function handle(string $streamId, string $date, string $period, string $teacherId, array $entries): AttendanceSession
     {
+        $this->newlyAbsent = [];
+
         return DB::transaction(function () use ($streamId, $date, $period, $teacherId, $entries) {
             $stream = DB::table('streams')->where('id', $streamId)->first();
 
@@ -40,6 +45,8 @@ class RecordRollCall
                     'session_id' => $session->id,
                     'student_id' => $e['student_id'],
                 ]);
+                $wasAbsent = $event->exists && $event->status === 'absent';
+
                 $event->status = $e['status'];
                 $event->reason = $e['reason'] ?? null;
                 $event->source = 'rollcall';
@@ -47,6 +54,10 @@ class RecordRollCall
                 $event->scanned_at = now();
                 $event->revision = (string) Str::uuid();
                 $event->save();
+
+                if ($e['status'] === 'absent' && ! $wasAbsent) {
+                    $this->newlyAbsent[] = $e['student_id'];
+                }
             }
 
             return $session->load('events');

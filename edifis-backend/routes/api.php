@@ -108,6 +108,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/attendance/rollcall', [AttendanceController::class, 'rollCall'])
         ->middleware('role:class_master|subject_teacher|discipline_master|principal|vice_principal|secretary')
         ->name('attendance.rollcall.submit');
+    Route::get('/attendance/absentees', [AttendanceController::class, 'absentees'])
+        ->middleware('role:principal|vice_principal|discipline_master|secretary')
+        ->name('attendance.absentees');
 
     Route::post('/attendance/sessions', [AttendanceController::class, 'openSession'])
         ->middleware('role:class_master|subject_teacher')

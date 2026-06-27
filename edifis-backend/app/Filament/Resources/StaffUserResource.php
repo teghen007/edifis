@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
@@ -85,7 +86,24 @@ class StaffUserResource extends Resource
                     ->formatStateUsing(fn ($state) => Str::headline($state))
                     ->getStateUsing(fn (User $record) => $record->roles->whereIn('name', self::STAFF_ROLES)->pluck('name')->unique()->values()),
             ])
-            ->actions([Tables\Actions\EditAction::make()])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('resetPassword')
+                    ->label('Reset password')
+                    ->icon('heroicon-o-key')
+                    ->color('gray')
+                    ->form([
+                        Forms\Components\TextInput::make('password')
+                            ->label('New password')
+                            ->password()
+                            ->required()
+                            ->minLength(6),
+                    ])
+                    ->action(function (User $record, array $data) {
+                        $record->update(['password' => Hash::make($data['password'])]);
+                        Notification::make()->title('Password reset for ' . $record->name)->success()->send();
+                    }),
+            ])
             ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
     }
 

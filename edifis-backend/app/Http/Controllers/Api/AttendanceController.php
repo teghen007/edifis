@@ -13,9 +13,12 @@ use App\Domain\Attendance\Actions\CloseSession;
 use App\Domain\Attendance\Actions\VoidScan;
 use App\Domain\Attendance\Models\AttendanceSession;
 use App\Domain\Attendance\Queries\SessionTally;
+use App\Domain\Notifications\Notifications\StudentAbsent;
 use App\Domain\Students\Models\Student;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceController
 {
@@ -97,6 +100,8 @@ class AttendanceController
             $v['entries'],
         );
 
+        $this->alertParentsOfAbsences($action->newlyAbsent, $v['entries'], $v['date']);
+
         return response()->json([
             'session_id' => $session->id,
             'date' => $v['date'],
@@ -107,6 +112,60 @@ class AttendanceController
             'late' => $session->events->where('status', 'late')->count(),
             'excused' => $session->events->where('status', 'excused')->count(),
         ], 201);
+    }
+
+    /** Push an alert to the parents of each newly-absent student (fail-soft). */
+    private function alertParentsOfAbsences(array $studentIds, array $entries, string $date): void
+    {
+        if (empty($studentIds)) {
+            return;
+        }
+
+        $reasons = collect($entries)->keyBy('student_id');
+
+        foreach ($studentIds as $studentId) {
+            try {
+                $student = Student::find($studentId);
+                if (! $student) {
+                    continue;
+                }
+                $name = trim($student->given_name . ' ' . $student->family_name);
+                $reason = $reasons[$studentId]['reason'] ?? null;
+
+                $parentIds = DB::table('guardian_student')->where('student_id', $studentId)->pluck('guardian_id');
+                foreach ($parentIds as $parentId) {
+                    User::find($parentId)?->notify(new StudentAbsent($studentId, $name, $date, $reason));
+                }
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+    }
+
+    /** Principal/VP: who is absent across the school on a given day. */
+    public function absentees(Request $request): JsonResponse
+    {
+        $date = $request->validate(['date' => ['nullable', 'date']])['date'] ?? now()->toDateString();
+
+        $rows = DB::table('attendance_events as e')
+            ->join('attendance_sessions as s', 's.id', '=', 'e.session_id')
+            ->join('students as st', 'st.id', '=', 'e.student_id')
+            ->leftJoin('streams as str', 'str.id', '=', 's.stream_id')
+            ->where('s.attendance_date', $date)
+            ->where('s.mode', 'rollcall')
+            ->whereIn('e.status', ['absent', 'late', 'excused'])
+            ->orderBy('str.name')
+            ->orderBy('st.family_name')
+            ->selectRaw("st.id, trim(st.family_name || ' ' || st.given_name) as name, str.name as section, e.status, e.reason")
+            ->get();
+
+        return response()->json([
+            'date' => $date,
+            'absent' => $rows->where('status', 'absent')->count(),
+            'late' => $rows->where('status', 'late')->count(),
+            'excused' => $rows->where('status', 'excused')->count(),
+            'students' => $rows->values(),
+        ]);
     }
 
     public function openSession(Request $request, OpenSession $action): JsonResponse

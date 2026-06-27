@@ -29,12 +29,14 @@ class ClassSubject extends Model
         'subject_id',
         'code',
         'coefficient',
+        'is_core',
     ];
 
     protected function casts(): array
     {
         return [
             'coefficient' => 'decimal:2',
+            'is_core' => 'boolean',
         ];
     }
 

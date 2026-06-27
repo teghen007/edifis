@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Academics\Models;
 
+use App\Domain\Students\Models\Student;
 use App\Support\HasUuidV7;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** Stub — fully implemented in Phase 4 (Academics). */
 class Mark extends Model
@@ -39,5 +41,15 @@ class Mark extends Model
             'synced_time' => 'datetime',
             'published' => 'boolean',
         ];
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 }

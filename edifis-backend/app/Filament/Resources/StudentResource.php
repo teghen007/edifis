@@ -67,7 +67,15 @@ class StudentResource extends Resource
                 Tables\Columns\TextColumn::make('enrolled_at')->dateTime(),
                 Tables\Columns\IconColumn::make('active')->boolean(),
             ])
-            ->filters([])
+            ->filters([
+                Tables\Filters\SelectFilter::make('current_class_id')
+                    ->label('Class')
+                    ->options(fn () => \App\Domain\Academics\Models\SchoolClass::orderBy('level')->pluck('name', 'id')),
+                Tables\Filters\SelectFilter::make('sex')
+                    ->options(['M' => 'Male', 'F' => 'Female']),
+                Tables\Filters\TernaryFilter::make('active')->default(true),
+            ])
+            ->defaultSort('family_name')
             ->actions([
                 Tables\Actions\ViewAction::make(),
             ])
