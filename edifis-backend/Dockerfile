@@ -51,7 +51,12 @@ RUN mkdir -p \
         storage/logs \
     && chmod -R 777 storage bootstrap/cache \
     && composer dump-autoload --optimize --no-dev \
-    && (php artisan storage:link 2>/dev/null || true)
+    && (php artisan storage:link 2>/dev/null || true) \
+    # dump-autoload / artisan above run as root and (re)write bootstrap/cache as
+    # root:644. PHP-FPM serves as www-data, which must be able to rewrite the
+    # compiled view/package caches — otherwise the first stale recompile 500s
+    # every page. Hand the cache dirs to www-data as the final build step.
+    && chown -R www-data:www-data storage bootstrap/cache
 
 # PHP-FPM + Nginx under supervisor (production HTTP serving).
 COPY docker/nginx.conf /etc/nginx/nginx.conf
