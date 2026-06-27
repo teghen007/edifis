@@ -56,6 +56,10 @@ class SmokePanel extends Command
             if (isset($pages['index'])) {
                 $targets[class_basename($resource) . ' (list)'] = $pages['index']->getPage();
             }
+            // Create pages render the form (catches broken form fields, e.g. media uploads).
+            if (isset($pages['create'])) {
+                $targets[class_basename($resource) . ' (create)'] = $pages['create']->getPage();
+            }
         }
 
         $failures = 0;
