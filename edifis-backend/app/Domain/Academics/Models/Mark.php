@@ -8,11 +8,22 @@ use App\Domain\Students\Models\Student;
 use App\Support\HasUuidV7;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /** Stub — fully implemented in Phase 4 (Academics). */
 class Mark extends Model
 {
     use HasUuidV7;
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['student_id', 'subject_id', 'sequence', 'score', 'max_score', 'published'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'id',

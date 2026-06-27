@@ -36,7 +36,12 @@ class StudentResource extends Resource
                     Forms\Components\TextInput::make('current_class_id')->label('Class ID')->required(),
                     Forms\Components\Select::make('boarding_status')->label('Boarder / Day')
                         ->options(['day' => 'Day student', 'boarding' => 'Boarder'])->default('day'),
-                    Forms\Components\FileUpload::make('photo_ref')->disk('public'),
+                    \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('photo')
+                        ->label('Student photo')
+                        ->collection('photo')
+                        ->image()
+                        ->imageEditor()
+                        ->avatar(),
                 ]),
             Forms\Components\Section::make('Consent (required for minors)')
                 ->schema([
