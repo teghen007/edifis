@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/marks_api.dart';
 import '../../core/services/results_api.dart';
+import '../../core/services/season_api.dart';
 import '../../core/services/students_api.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/glass_card.dart';
@@ -71,6 +72,14 @@ class _SubmitMarkScreenState extends ConsumerState<SubmitMarkScreen> {
       : <StudentRow>[];
 
     final seqOptions = List.generate(6, (i) => 'Sequence ${i+1}');
+
+    // Default the sequence to the school's current evaluation (1–6).
+    final currentSeq = ref.watch(seasonProvider).valueOrNull?['global_sequence'];
+    if (currentSeq != null && _sequence == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _sequence == null) setState(() => _sequence = 'Sequence $currentSeq');
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(backgroundColor: AppColors.blue700, foregroundColor: Colors.white, title: const Text('Record Mark')),

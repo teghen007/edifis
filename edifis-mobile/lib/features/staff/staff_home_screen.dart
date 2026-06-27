@@ -37,6 +37,7 @@ class StaffHomeScreen extends ConsumerWidget {
   List<Widget> _actionsFor(BuildContext c, String role) {
     final a = <Widget>[];
     if (role == 'principal' || role == 'vice_principal') {
+      a.add(_qa(c, LucideIcons.calendarRange, 'Season', AppColors.blue500, '/season'));
       a.add(_qa(c, LucideIcons.sparkles, 'Ask AI', AppColors.gold, '/vacuum'));
       a.add(_qa(c, LucideIcons.chartColumn, 'Performance', AppColors.blue700, '/performance'));
       a.add(_qa(c, LucideIcons.award, 'Results', AppColors.blue600, '/results'));

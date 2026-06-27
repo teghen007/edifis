@@ -32,8 +32,30 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
   List<dynamic> _students = [];
   bool _loading = false, _submitting = false, _loaded = false;
   String? _error;
+  DateTime _date = DateTime.now();
 
-  String get _today => DateTime.now().toIso8601String().split('T').first;
+  String get _dateStr => _date.toIso8601String().split('T').first;
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime.now().subtract(const Duration(days: 60)),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _date = picked;
+        _loaded = false;
+      });
+    }
+  }
+
+  void _markAll(String status) => setState(() {
+        for (final s in _students) {
+          _status[s['id']] = status;
+        }
+      });
 
   Future<void> _loadRoster() async {
     if (_streamId == null) {
@@ -47,7 +69,7 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
     try {
       final sheet = await ref
           .read(attendanceApiProvider)
-          .sheet(streamId: _streamId!, date: _today, period: _period);
+          .sheet(streamId: _streamId!, date: _dateStr, period: _period);
       _students = sheet['students'] as List;
       _status.clear();
       _reason.clear();
@@ -84,7 +106,7 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
         };
       }).toList();
       final res = await ref.read(attendanceApiProvider).submitRollCall(
-          streamId: _streamId!, date: _today, period: _period, entries: entries);
+          streamId: _streamId!, date: _dateStr, period: _period, entries: entries);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Roll call saved — ${res['present']} present, ${res['absent']} absent'),
@@ -150,6 +172,21 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
                 }),
               ),
           ]),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: _pickDate,
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(children: [
+                const Icon(Icons.calendar_today, size: 16, color: AppColors.blue700),
+                const SizedBox(width: 8),
+                Text(_dateStr, style: const TextStyle(color: AppColors.ink, fontWeight: FontWeight.w600)),
+                const SizedBox(width: 6),
+                const Text('(tap to change)', style: TextStyle(color: AppColors.muted, fontSize: 12)),
+              ]),
+            ),
+          ),
           if (_error != null) ...[
             const SizedBox(height: 10),
             Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 13)),
@@ -173,11 +210,17 @@ class _S extends ConsumerState<TakeAttendanceScreen> {
         width: double.infinity,
         color: AppColors.blue50,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        child: Text(
-          'Present ${_count('present')}   ·   Absent ${_count('absent')}   ·   Late ${_count('late')}   ·   Excused ${_count('excused')}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.blue800, fontWeight: FontWeight.w600, fontSize: 13),
-        ),
+        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+          Expanded(child: Text(
+            'Present ${_count('present')}  ·  Absent ${_count('absent')}  ·  Late ${_count('late')}',
+            style: const TextStyle(color: AppColors.blue800, fontWeight: FontWeight.w600, fontSize: 13),
+          )),
+          TextButton(
+            onPressed: () => _markAll('present'),
+            style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: Size.zero),
+            child: const Text('All present', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+          ),
+        ]),
       ),
       Expanded(
         child: ListView.separated(
