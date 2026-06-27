@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Issuance\Models;
 
+use App\Domain\Students\Models\Student;
 use App\Support\HasUuidV7;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IssueEvent extends Model
 {
@@ -34,5 +36,15 @@ class IssueEvent extends Model
             'issued_at' => 'datetime',
             'synced_time' => 'datetime',
         ];
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'student_id');
+    }
+
+    public function catalogueItem(): BelongsTo
+    {
+        return $this->belongsTo(CatalogueItem::class, 'catalogue_item_id');
     }
 }

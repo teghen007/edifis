@@ -51,13 +51,23 @@ class IssuanceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('batch_id')->label('Batch')->searchable(),
-                Tables\Columns\TextColumn::make('student_id')->searchable(),
-                Tables\Columns\TextColumn::make('catalogue_item_id'),
-                Tables\Columns\TextColumn::make('cost')->money('XAF'),
+                Tables\Columns\TextColumn::make('student.family_name')
+                    ->label('Student')
+                    ->formatStateUsing(fn ($record) => $record->student
+                        ? trim(($record->student->family_name ?? '') . ' ' . ($record->student->given_name ?? ''))
+                        : '—')
+                    ->searchable(['family_name', 'given_name'])
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('catalogueItem.name')
+                    ->label('Item')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('cost')->money('XAF')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('issued_at')->dateTime(),
+                Tables\Columns\TextColumn::make('issued_at')->dateTime()->sortable(),
             ])
+            ->defaultSort('issued_at', 'desc')
             ->actions([
                 Tables\Actions\Action::make('return')
                     ->label('Return Item')
