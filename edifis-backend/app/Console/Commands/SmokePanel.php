@@ -25,6 +25,18 @@ class SmokePanel extends Command
 
     public function handle(): int
     {
+        $this->newLine();
+        $this->line('Running as: <fg=yellow>' . $this->effectiveUser() . '</>');
+        if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            $this->warn('Running as root — root can write any cache file, so storage-permission '
+                . 'problems that break the www-data web user may pass here. After a deploy run: '
+                . 'docker compose exec -u www-data app php artisan edifis:smoke-panel');
+        }
+
+        // Canary for the "root-owned cache poisons www-data" outage: any compiled
+        // cache file the current user can't overwrite would 500 a real web request.
+        $storageFailures = $this->checkStorageWritable();
+
         // Don't pollute the activity log with the throwaway user's create/delete.
         app(\Spatie\Activitylog\ActivityLogStatus::class)->disable();
 
@@ -81,14 +93,74 @@ class SmokePanel extends Command
 
         $this->newLine();
         $total = count($targets);
-        if ($failures === 0) {
-            $this->info("All {$total} panel pages rendered cleanly.");
+        if ($failures === 0 && $storageFailures === 0) {
+            $this->info("All {$total} panel pages rendered cleanly; storage cache writable.");
 
             return self::SUCCESS;
         }
 
-        $this->error("{$failures} of {$total} panel pages FAILED to render.");
+        if ($failures > 0) {
+            $this->error("{$failures} of {$total} panel pages FAILED to render.");
+        }
+        if ($storageFailures > 0) {
+            $this->error("{$storageFailures} storage cache location(s) not writable by the current user.");
+        }
 
         return self::FAILURE;
+    }
+
+    private function effectiveUser(): string
+    {
+        if (function_exists('posix_geteuid') && function_exists('posix_getpwuid')) {
+            $info = posix_getpwuid(posix_geteuid());
+
+            return $info['name'] ?? ('uid:' . posix_geteuid());
+        }
+
+        return get_current_user() ?: (getenv('USER') ?: 'unknown');
+    }
+
+    /**
+     * Flags the exact condition behind the login-500 outage: a compiled cache
+     * file (or its directory) the current OS user cannot overwrite. Run as
+     * www-data, this catches root-owned cache left by deploy commands.
+     */
+    private function checkStorageWritable(): int
+    {
+        $failures = 0;
+        $dirs = [
+            storage_path('framework/views'),
+            storage_path('framework/cache'),
+            storage_path('framework/sessions'),
+            storage_path('logs'),
+            base_path('bootstrap/cache'),
+        ];
+
+        foreach ($dirs as $dir) {
+            if (! is_dir($dir)) {
+                continue;
+            }
+            if (! is_writable($dir)) {
+                $failures++;
+                $this->line("  <fg=red>FAIL</> directory not writable: {$dir}");
+
+                continue;
+            }
+            $unwritable = [];
+            foreach (glob($dir . '/*') ?: [] as $file) {
+                if (is_file($file) && ! is_writable($file)) {
+                    $unwritable[] = basename($file);
+                }
+            }
+            if ($unwritable !== []) {
+                $failures++;
+                $this->line('  <fg=red>FAIL</> ' . count($unwritable) . " file(s) in {$dir} not writable by current user "
+                    . "(e.g. {$unwritable[0]}) — run cache/artisan commands as www-data");
+            } else {
+                $this->line("  <fg=green>OK  </> writable: {$dir}");
+            }
+        }
+
+        return $failures;
     }
 }
