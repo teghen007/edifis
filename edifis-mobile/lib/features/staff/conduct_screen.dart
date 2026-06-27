@@ -69,12 +69,12 @@ class _ConductScreenState extends ConsumerState<ConductScreen> {
         const HintBanner('Choose the class and term, then set each student\'s conduct grade. It shows on their report card.'),
         GlassCard(child: Column(children: [
           streams.when(loading: () => const LinearProgressIndicator(), error: (_,__) => const SizedBox.shrink(),
-            data: (s) => DropdownButtonFormField<String>(value: _streamId, decoration: const InputDecoration(labelText: 'Stream'),
+            data: (s) => DropdownButtonFormField<String>(initialValue: _streamId, decoration: const InputDecoration(labelText: 'Stream'),
               items: s.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
               onChanged: (v) => setState(() => _streamId = v))),
           const SizedBox(height: 12),
           terms.when(loading: () => const LinearProgressIndicator(), error: (_,__) => const SizedBox.shrink(),
-            data: (t) => DropdownButtonFormField<String>(value: _termId, decoration: const InputDecoration(labelText: 'Term'),
+            data: (t) => DropdownButtonFormField<String>(initialValue: _termId, decoration: const InputDecoration(labelText: 'Term'),
               items: t.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
               onChanged: (v) => setState(() => _termId = v))),
         ])),
@@ -99,7 +99,7 @@ class _ConductScreenState extends ConsumerState<ConductScreen> {
                     const SizedBox(height: 10),
                     Row(children: [
                       Expanded(child: DropdownButtonFormField<String>(
-                        value: _grades[s.id], decoration: const InputDecoration(labelText: 'Conduct', isDense: true),
+                        initialValue: _grades[s.id], decoration: const InputDecoration(labelText: 'Conduct', isDense: true),
                         items: _conductOptions.map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
                         onChanged: (v) => setState(() { if (v != null) _grades[s.id] = v; }))),
                       const SizedBox(width: 12),

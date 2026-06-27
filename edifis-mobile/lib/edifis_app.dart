@@ -9,7 +9,7 @@ class EdifisApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
-      title: 'EDIFIS Trial',
+      title: 'EDIFIS',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       routerConfig: ref.watch(routerProvider),

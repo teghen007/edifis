@@ -42,12 +42,12 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         Row(children: [
           Expanded(child: streams.when(loading: () => const LinearProgressIndicator(), error: (_,__) => const SizedBox.shrink(),
-            data: (s) => DropdownButtonFormField<String>(value: _streamId, decoration: const InputDecoration(labelText: 'Stream'),
+            data: (s) => DropdownButtonFormField<String>(initialValue: _streamId, decoration: const InputDecoration(labelText: 'Stream'),
               items: s.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
               onChanged: (v) => setState(() => _streamId = v)))),
           const SizedBox(width: 12),
           Expanded(child: terms.when(loading: () => const LinearProgressIndicator(), error: (_,__) => const SizedBox.shrink(),
-            data: (t) => DropdownButtonFormField<String>(value: _termId, decoration: const InputDecoration(labelText: 'Term'),
+            data: (t) => DropdownButtonFormField<String>(initialValue: _termId, decoration: const InputDecoration(labelText: 'Term'),
               items: t.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
               onChanged: (v) => setState(() => _termId = v)))),
         ]),
@@ -55,7 +55,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
         GlossyButton(label: _computing ? 'Computing...' : 'Compute Results', icon: Icons.calculate, onTap: _compute),
         const SizedBox(height: 16),
         if (sheet == null) const SizedBox.shrink()
-        else sheet!.when(loading: () => const CircularProgressIndicator(),
+        else sheet.when(loading: () => const CircularProgressIndicator(),
           error: (_,__) => const Text('Error loading mastersheet'),
           data: (ms) => Column(children: [
             Text('${ms.streamName} · ${ms.termName}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.ink)),

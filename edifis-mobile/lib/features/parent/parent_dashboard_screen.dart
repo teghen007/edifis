@@ -134,13 +134,13 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                     error: (e, _) => _errorTile('Results unavailable'),
                     data: (r) {
                       final avg = r['average'] ?? 0;
-                      final att = attendance.maybeWhen(data: (a) => a['attendance_events'] ?? 0, orElse: () => 0);
+                      final att = attendance.maybeWhen(data: (a) => a['rate'], orElse: () => null);
                       final bal = _balanceValue(balance.maybeWhen(data: (b) => b, orElse: () => 0));
                       return Column(children: [
                         Row(children: [
                           Expanded(child: _summaryTile(LucideIcons.award, '$avg / 20', 'Average')),
                           const SizedBox(width: 14),
-                          Expanded(child: _summaryTile(LucideIcons.calendarCheck, '$att days', 'Attendance')),
+                          Expanded(child: _summaryTile(LucideIcons.calendarCheck, att != null ? '$att%' : '—', 'Attendance')),
                         ]),
                         const SizedBox(height: 14),
                         Row(children: [
@@ -150,15 +150,6 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                           const Expanded(child: SizedBox.shrink()),
                         ]),
                         const SizedBox(height: 20),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                          _qa(LucideIcons.sparkles, 'Ask AI', AppColors.gold,
-                            () => context.push('/parent-ask')),
-                          _qa(LucideIcons.fileText, 'Report Card', AppColors.blue600,
-                            () => context.push('/report-card', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
-                          _qa(LucideIcons.receipt, 'Fee Statement', AppColors.blue400,
-                            () => context.push('/fees-statement', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
-                        ]),
-                        const SizedBox(height: 16),
                         trend.maybeWhen(
                           data: (pts) => pts.length < 2 ? const SizedBox.shrink() : Column(children: [
                             _trendCard(pts),
@@ -167,6 +158,15 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
                           orElse: () => const SizedBox.shrink()),
                         if (r['marks'] is List && (r['marks'] as List).isNotEmpty)
                           ...((r['marks'] as List).take(8).map((m) => _markRow(m))),
+                        const SizedBox(height: 20),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                          _qa(LucideIcons.sparkles, 'Ask AI', AppColors.gold,
+                            () => context.push('/parent-ask')),
+                          _qa(LucideIcons.fileText, 'Report Card', AppColors.blue600,
+                            () => context.push('/report-card', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
+                          _qa(LucideIcons.receipt, 'Fee Statement', AppColors.blue400,
+                            () => context.push('/fees-statement', extra: {'id': _selectedId, 'name': selected['name'] ?? ''})),
+                        ]),
                       ]);
                     },
                   ),

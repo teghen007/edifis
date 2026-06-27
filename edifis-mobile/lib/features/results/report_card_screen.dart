@@ -65,7 +65,7 @@ class _ReportCardScreenState extends ConsumerState<ReportCardScreen> {
       body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(children: [
         terms.when(loading: () => const LinearProgressIndicator(), error: (_,__) => const SizedBox.shrink(),
           data: (t) => DropdownButtonFormField<String>(
-            value: _termId, decoration: const InputDecoration(labelText: 'Term'),
+            initialValue: _termId, decoration: const InputDecoration(labelText: 'Term'),
             items: t.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
             onChanged: (v) => setState(() => _termId = v))),
         const SizedBox(height: 16),
