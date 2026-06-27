@@ -6,11 +6,30 @@ namespace App\Http\Controllers\Api;
 
 use App\Domain\Students\Actions\EnrolStudent;
 use App\Domain\Students\Models\Student;
+use App\Exports\StudentAdmissionTemplate;
+use App\Imports\StudentAdmissionImport;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class StudentController
 {
+    public function admissionTemplate(): BinaryFileResponse
+    {
+        return Excel::download(new StudentAdmissionTemplate, 'student-admission-template.xlsx');
+    }
+
+    public function admissionUpload(Request $request): JsonResponse
+    {
+        $request->validate(['file' => ['required', 'file']]);
+
+        $import = new StudentAdmissionImport;
+        Excel::import($import, $request->file('file'));
+
+        return response()->json($import->getResult());
+    }
+
     public function index(Request $request): JsonResponse
     {
         $students = Student::where('active', true)

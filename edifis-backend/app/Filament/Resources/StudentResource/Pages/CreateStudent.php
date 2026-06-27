@@ -20,8 +20,8 @@ class CreateStudent extends CreateRecord
                 'other_names' => $data['other_names'] ?? null,
                 'sex' => $data['sex'] ?? null,
                 'date_of_birth' => $data['date_of_birth'] ?? null,
-                'current_class_id' => $data['current_class_id'],
-                'photo_ref' => $data['photo_ref'] ?? null,
+                'stream_id' => $data['stream_id'] ?? null,
+                'boarding_status' => $data['boarding_status'] ?? 'day',
             ],
             'consent' => $data['consent'] ?? [
                 'consenter_name' => 'Unknown',

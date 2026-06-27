@@ -33,7 +33,12 @@ class StudentResource extends Resource
                     Forms\Components\TextInput::make('other_names'),
                     Forms\Components\Select::make('sex')->options(['M' => 'Male', 'F' => 'Female']),
                     Forms\Components\DatePicker::make('date_of_birth'),
-                    Forms\Components\TextInput::make('current_class_id')->label('Class ID')->required(),
+                    Forms\Components\Select::make('stream_id')
+                        ->label('Class / Section')
+                        ->options(fn () => \App\Domain\Academics\Models\Stream::with('schoolClass')->where('active', true)->get()
+                            ->mapWithKeys(fn ($s) => [$s->id => $s->name . ' (' . ($s->schoolClass?->name ?? '') . ')']))
+                        ->searchable()
+                        ->required(),
                     Forms\Components\Select::make('boarding_status')->label('Boarder / Day')
                         ->options(['day' => 'Day student', 'boarding' => 'Boarder'])->default('day'),
                     \Filament\Forms\Components\SpatieMediaLibraryFileUpload::make('photo')
@@ -49,7 +54,11 @@ class StudentResource extends Resource
                     Forms\Components\Select::make('consent.relationship')
                         ->options(['mother' => 'Mother', 'father' => 'Father', 'guardian' => 'Guardian', 'other' => 'Other'])
                         ->required(),
-                    Forms\Components\TextInput::make('consent.consenter_contact')->label('Guardian Contact'),
+                    Forms\Components\TextInput::make('consent.consenter_contact')
+                        ->label('Guardian phone')
+                        ->tel()
+                        ->required()
+                        ->helperText('Creates the parent portal account. Use the same phone for siblings to link them to one parent.'),
                     Forms\Components\CheckboxList::make('consent.scope')
                         ->options([
                             'academic_records' => 'Academic Records',

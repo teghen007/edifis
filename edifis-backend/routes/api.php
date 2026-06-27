@@ -62,6 +62,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/students', [StudentController::class, 'store'])
         ->middleware('role:secretary|bursar')
         ->name('students.store');
+    Route::get('/students/admission-template', [StudentController::class, 'admissionTemplate'])
+        ->middleware('role:secretary|bursar|principal|school_admin')
+        ->name('students.admission-template');
+    Route::post('/students/admission-upload', [StudentController::class, 'admissionUpload'])
+        ->middleware('role:secretary|bursar|principal|school_admin')
+        ->name('students.admission-upload');
     Route::get('/students', [StudentController::class, 'index'])
         ->middleware('role:principal|vice_principal|secretary|bursar|class_master|subject_teacher|discipline_master')
         ->name('students.index');
