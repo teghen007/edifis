@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Domain\School\Models\SchoolSetting;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -49,8 +50,13 @@ class SchoolSettings extends Page implements HasForms
                         ->helperText('Language for report cards and the AI assistant.'),
                     TextInput::make('motto')->maxLength(255),
                     TextInput::make('principal_name')->label('Principal name')->maxLength(255),
-                    TextInput::make('logo_url')->label('Logo URL')->url()->maxLength(500)
-                        ->helperText('Paste a hosted image URL (e.g. https://...). No file upload.'),
+                    FileUpload::make('logo_url')->label('School logo')
+                        ->image()
+                        ->disk('public')
+                        ->directory('branding')
+                        ->imageEditor()
+                        ->maxSize(2048)
+                        ->helperText('Upload a PNG or JPG (max 2 MB). Shown on your school homepage and report cards.'),
                 ])->columns(2),
                 Section::make('Contact')->schema([
                     TextInput::make('phone')->tel()->maxLength(50),

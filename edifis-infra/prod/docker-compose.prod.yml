@@ -17,6 +17,7 @@ services:
     expose: ["8000"]
     volumes:
       - /opt/edifis/secrets/service-account.json:/var/www/storage/app/firebase/service-account.json:ro
+      - edifis_storage:/var/www/storage/app/public
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
@@ -66,3 +67,4 @@ volumes:
   pgdata:
   caddy_data:
   caddy_config:
+  edifis_storage:

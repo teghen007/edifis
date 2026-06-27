@@ -97,7 +97,11 @@
 <body>
   <nav class="nav"><div class="wrap navflex">
     <a class="brandwrap" href="/" style="display:flex;align-items:center;gap:10px">
-      <img src="{{ asset('brand/logo-white.png') }}" alt="EDIFIS" style="height:26px">
+      @if (!empty($logo))
+        <img src="{{ $logo }}" alt="{{ $schoolName }}" style="height:32px;border-radius:6px">
+      @else
+        <img src="{{ asset('brand/logo-white.png') }}" alt="EDIFIS" style="height:26px">
+      @endif
       <span class="brand">{{ $schoolName }}</span>
     </a>
     <input type="checkbox" id="nz"><label class="burger" for="nz">&#9776;</label>
@@ -114,7 +118,13 @@
     <div class="bg"></div><div class="ov"></div><div class="blob"></div>
     <div class="wrap inner">
       <span class="badge">Welcome to</span>
+      @if (!empty($logo))
+        <img src="{{ $logo }}" alt="{{ $schoolName }}" style="height:84px;margin-bottom:14px;border-radius:10px;background:rgba(255,255,255,.08);padding:6px">
+      @endif
       <h1>{{ $schoolName }}</h1>
+      @if (!empty($motto))
+        <p style="color:#BFD7FE;font-size:15px;letter-spacing:3px;font-weight:700;text-transform:uppercase;margin:4px 0 0">{{ $motto }}</p>
+      @endif
       <p class="lead">Results, attendance, fees and school communication — together in one place, for staff and families. Online or offline.</p>
       <div class="cta">
         <a class="btn btn-primary" href="/parents">I'm a Parent →</a>
@@ -175,15 +185,18 @@
       </span>
     </div>
     <div class="contactrow">
-      <a class="chip wa" href="https://wa.me/237674072084">
+      <a class="chip wa" href="https://wa.me/{{ $phone ? preg_replace('/\D/', '', $phone) : '237674072084' }}">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M.06 24l1.69-6.16a11.87 11.87 0 01-1.59-5.95C.16 5.34 5.5 0 12.05 0a11.82 11.82 0 018.41 3.49 11.82 11.82 0 013.48 8.41c0 6.56-5.34 11.89-11.89 11.89a11.9 11.9 0 01-5.69-1.45L.06 24zm6.6-3.81c1.68 1 3.28 1.59 5.39 1.59 5.45 0 9.89-4.43 9.89-9.88 0-5.46-4.42-9.89-9.88-9.89-5.45 0-9.89 4.43-9.89 9.88a9.86 9.86 0 001.59 5.3l-1 3.65 3.91-1.65zm11.39-5.46c-.07-.12-.27-.2-.57-.35-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37s-1.04 1.02-1.04 2.48 1.07 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41z"/></svg>
-        WhatsApp 674 072 084
+        {{ $phone ?: 'WhatsApp 674 072 084' }}
       </a>
-      <a class="chip mail" href="mailto:noreply.myedifis@gmail.com">
+      <a class="chip mail" href="mailto:{{ $email ?: 'noreply.myedifis@gmail.com' }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-        noreply.myedifis@gmail.com
+        {{ $email ?: 'noreply.myedifis@gmail.com' }}
       </a>
     </div>
+    @if (!empty($address))
+      <p class="sub" style="margin-top:14px">{{ $address }}</p>
+    @endif
   </div></section>
 
   <section id="contact"><div class="wrap"><div class="band reveal">

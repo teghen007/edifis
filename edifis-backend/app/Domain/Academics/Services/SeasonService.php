@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Academics\Services;
 
 use App\Domain\Academics\Models\AcademicYear;
+use App\Domain\Academics\Models\ClassSubject;
+use App\Domain\Academics\Models\SchoolClass;
+use App\Domain\Academics\Models\Section;
+use App\Domain\Academics\Models\Stream;
 use App\Domain\Academics\Models\Term;
 use App\Domain\Promotion\Actions\DeliberateStream;
 use App\Domain\Results\Actions\ComputeResults;
+use App\Domain\Students\Models\Student;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -167,13 +172,106 @@ class SeasonService
                 ]);
             }
 
+            $carry = $this->carryStudentsForward($year, $newYear);
+
             return [
                 'archived_year' => $year->name,
                 'new_year' => $newYear->name,
                 'streams_deliberated' => $deliberated,
                 'deliberation_errors' => $errors,
+                'promoted' => $carry['promoted'],
+                'repeated' => $carry['repeated'],
+                'graduated' => $carry['graduated'],
             ] + $this->current();
         });
+    }
+
+    /**
+     * Apply promotion decisions to next-year enrolment: promoted/conditional
+     * students move up one class (Form 1 A -> Form 2 A), repeaters stay in the
+     * same class, and the top class graduates (marked inactive). Old enrolment
+     * rows are kept intact for history.
+     *
+     * @return array{promoted:int, repeated:int, graduated:int}
+     */
+    private function carryStudentsForward(AcademicYear $oldYear, AcademicYear $newYear): array
+    {
+        $classesByLevel = SchoolClass::orderBy('level')->get()->keyBy('level');
+        $sectionId = Section::first()?->id;
+        $decisions = DB::table('promotion_decisions')
+            ->where('academic_year', $oldYear->id)
+            ->pluck('outcome', 'student_id');
+
+        $newStreams = []; // cache: "classId|letter" => Stream
+        $promoted = $repeated = $graduated = 0;
+
+        $oldStreams = Stream::where('academic_year_id', $oldYear->id)->with('schoolClass')->get();
+
+        foreach ($oldStreams as $oldStream) {
+            $oldClass = $oldStream->schoolClass;
+            if (! $oldClass) {
+                continue;
+            }
+            $letter = trim(str_ireplace($oldClass->name, '', $oldStream->name)) ?: 'A';
+
+            $studentIds = DB::table('student_stream')
+                ->where('stream_id', $oldStream->id)
+                ->where('academic_year_id', $oldYear->id)
+                ->pluck('student_id');
+
+            foreach ($studentIds as $studentId) {
+                $outcome = $decisions[$studentId] ?? 'repeat';
+                $advancing = in_array($outcome, ['promoted', 'conditional'], true);
+
+                $targetClass = $advancing
+                    ? ($classesByLevel[$oldClass->level + 1] ?? null)
+                    : $oldClass;
+
+                // Top class + promoted = graduate.
+                if ($advancing && ! $targetClass) {
+                    Student::where('id', $studentId)->update(['active' => false]);
+                    $graduated++;
+                    continue;
+                }
+
+                $key = $targetClass->id . '|' . $letter;
+                $stream = $newStreams[$key] ??= $this->ensureStream($targetClass, $letter, $newYear, $sectionId);
+
+                DB::table('student_stream')->updateOrInsert(
+                    ['student_id' => $studentId, 'stream_id' => $stream->id, 'academic_year_id' => $newYear->id],
+                    ['updated_at' => now(), 'created_at' => now()],
+                );
+                Student::where('id', $studentId)->update([
+                    'stream_id' => $stream->id,
+                    'class_id' => $targetClass->id,
+                    'current_class_id' => $targetClass->id,
+                ]);
+
+                $advancing ? $promoted++ : $repeated++;
+            }
+        }
+
+        return ['promoted' => $promoted, 'repeated' => $repeated, 'graduated' => $graduated];
+    }
+
+    /** Find or create a section for a class in a year, seeding its subjects. */
+    private function ensureStream(SchoolClass $class, string $letter, AcademicYear $year, ?string $sectionId): Stream
+    {
+        $stream = Stream::firstOrCreate(
+            ['class_id' => $class->id, 'academic_year_id' => $year->id, 'name' => trim($class->name . ' ' . $letter)],
+            ['section_id' => $sectionId, 'active' => true],
+        );
+
+        if ($stream->wasRecentlyCreated) {
+            foreach (ClassSubject::where('class_id', $class->id)->get() as $cs) {
+                DB::table('subject_stream')->updateOrInsert(
+                    ['stream_id' => $stream->id, 'subject_id' => $cs->subject_id],
+                    ['coefficient' => $cs->coefficient, 'updated_at' => now(), 'created_at' => now()],
+                );
+            }
+        }
+
+        return $stream;
     }
 
     /** All academic years (for the admin archive selector). */
