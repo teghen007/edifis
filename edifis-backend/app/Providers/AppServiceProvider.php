@@ -15,6 +15,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        \Spatie\Health\Facades\Health::checks([
+            \Spatie\Health\Checks\Checks\DatabaseCheck::new(),
+            \Spatie\Health\Checks\Checks\CacheCheck::new(),
+            \Spatie\Health\Checks\Checks\RedisCheck::new(),
+            \Spatie\Health\Checks\Checks\UsedDiskSpaceCheck::new()
+                ->warnWhenUsedSpaceIsAbovePercentage(80)
+                ->failWhenUsedSpaceIsAbovePercentage(90),
+        ]);
     }
 }
