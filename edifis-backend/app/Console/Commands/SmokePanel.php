@@ -25,6 +25,9 @@ class SmokePanel extends Command
 
     public function handle(): int
     {
+        // Don't pollute the activity log with the throwaway user's create/delete.
+        app(\Spatie\Activitylog\ActivityLogStatus::class)->disable();
+
         $user = User::create([
             'id' => (string) \Illuminate\Support\Str::uuid(),
             'name' => 'Panel Smoke',
